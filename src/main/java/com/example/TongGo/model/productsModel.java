@@ -1,4 +1,5 @@
 package com.example.TongGo.model;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -8,7 +9,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 import lombok.Data;
-import lombok.Data;
 import jakarta.persistence.Id;
 
 @Entity
@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 @Data
 
 public class productsModel {
+    @Column(name = "id_product", nullable = false)  
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idProduct;

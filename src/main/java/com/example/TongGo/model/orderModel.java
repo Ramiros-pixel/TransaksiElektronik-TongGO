@@ -29,7 +29,7 @@ public class orderModel {
     @JoinColumn(name = "table_id", nullable = false)
     private TableModel tableId;
 
-    @Column(name = "total_price", nullable = false)
+    @Column(name = "total_price", nullable = true)
     private Double totalPrice;
 
     @Column(name = "status", nullable = false)
