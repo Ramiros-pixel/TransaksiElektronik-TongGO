@@ -1,0 +1,72 @@
+package com.example.TongGo.controller;
+
+import com.example.TongGo.model.orderModel;
+import com.example.TongGo.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+
+    @Autowired
+    private OrderService orderService;
+
+    /**
+     * Endpoint untuk inisiasi order baru
+     * POST /api/orders/init?userId=1&tableId=1
+     */
+    @PostMapping("/init")
+    public ResponseEntity<?> initOrder(@RequestParam Long userId, @RequestParam Long tableId) {
+        try {
+            orderModel order = orderService.createOrder(userId, tableId);
+            return ResponseEntity.ok(order);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * Mengambil semua daftar order
+     */
+    @GetMapping("/list")
+    public List<orderModel> listAllOrders() {
+        return orderService.getAllOrders();
+    }
+
+    /**
+     * Mengambil detail order berdasarkan ID
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getOrder(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(orderService.getOrderById(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Mengambil daftar order milik user tertentu
+     */
+    @GetMapping("/user/{userId}")
+    public List<orderModel> listUserOrders(@PathVariable Long userId) {
+        return orderService.getOrdersByUser(userId);
+    }
+
+    /**
+     * Menghapus order
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteOrder(@PathVariable Long id) {
+        try {
+            orderService.deleteOrder(id);
+            return ResponseEntity.ok("Order deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+}

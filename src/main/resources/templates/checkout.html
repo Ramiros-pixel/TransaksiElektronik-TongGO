@@ -1,0 +1,303 @@
+<!-- checkout.html - Thymeleaf Template Example -->
+<!-- Letakkan di: src/main/resources/templates/checkout.html -->
+
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - TongGo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .order-info {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .total {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            text-align: right;
+            margin-top: 10px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-pay {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-pay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 Checkout</h1>
+        <p style="color: #666; margin-bottom: 20px;">Order #<span th:text="${order.orderNumber}"></span></p>
+        
+        <!-- Order Details -->
+        <div class="order-info">
+            <h3 style="margin-bottom: 15px;">Ringkasan Pesanan</h3>
+            <div class="order-item" th:each="item : ${order.items}">
+                <span th:text="${item.productName}"></span>
+                <span th:text="'Rp ' + ${item.subtotal}"></span>
+            </div>
+            <div class="total">
+                Total: <span th:text="'Rp ' + ${order.totalPrice}"></span>
+            </div>
+        </div>
+        
+        <!-- Status Messages -->
+        <div id="successMessage" class="status-message success">
+            ✓ Pembayaran berhasil! Terima kasih telah berbelanja.
+        </div>
+        <div id="errorMessage" class="status-message error"></div>
+        <div id="spinner" class="spinner"></div>
+        
+        <!-- Action Buttons -->
+        <div class="button-group">
+            <button class="btn-pay" id="payButton" onclick="startPayment()">
+                💳 Lanjutkan Pembayaran
+            </button>
+            <button class="btn-cancel" onclick="goBack()">
+                ← Kembali
+            </button>
+        </div>
+    </div>
+
+    <!-- Load Midtrans Snap Script -->
+    <script src="https://app.midtrans.com/snap/snap.js" 
+        data-client-key="YOUR_CLIENT_KEY"></script>
+
+    <script>
+        const orderId = [[${order.idOrder}]];
+        const orderNumber = '[[${order.orderNumber}]]';
+        const totalPrice = [[${order.totalPrice}]];
+        const userName = '[[${user.username}]]';
+        const userEmail = '[[${user.email}]]';
+
+        /**
+         * Start payment process
+         */
+        function startPayment() {
+            const payButton = document.getElementById('payButton');
+            const spinner = document.getElementById('spinner');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            payButton.disabled = true;
+            spinner.style.display = 'block';
+            errorMessage.style.display = 'none';
+
+            // Prepare payment request
+            const paymentRequest = {
+                orderId: orderId,
+                amount: totalPrice,
+                paymentType: 'snap',
+                customerName: userName,
+                customerEmail: userEmail,
+                customerPhone: '08123456789' // Get from user profile
+            };
+
+            // Call backend payment API
+            fetch('/api/payment/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(paymentRequest)
+            })
+            .then(response => response.json())
+            .then(data => {
+                spinner.style.display = 'none';
+                
+                if (data.success) {
+                    // Open Midtrans Snap
+                    snap.pay(data.midtransId, {
+                        onSuccess: function(result) {
+                            console.log('Payment Success:', result);
+                            // Show success message
+                            showSuccessMessage();
+                            // Redirect after 3 seconds
+                            setTimeout(() => {
+                                window.location.href = '/order-success/' + orderId;
+                            }, 3000);
+                        },
+                        onPending: function(result) {
+                            console.log('Payment Pending:', result);
+                            errorMessage.textContent = '⏳ Pembayaran sedang diproses...';
+                            errorMessage.className = 'status-message error';
+                            errorMessage.style.display = 'block';
+                        },
+                        onError: function(result) {
+                            console.error('Payment Error:', result);
+                            errorMessage.textContent = '❌ Pembayaran gagal. Silakan coba lagi.';
+                            errorMessage.className = 'status-message error';
+                            errorMessage.style.display = 'block';
+                            payButton.disabled = false;
+                        },
+                        onClose: function() {
+                            console.log('Payment popup closed');
+                            payButton.disabled = false;
+                        }
+                    });
+                } else {
+                    errorMessage.textContent = '❌ Error: ' + data.message;
+                    errorMessage.className = 'status-message error';
+                    errorMessage.style.display = 'block';
+                    payButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                spinner.style.display = 'none';
+                errorMessage.textContent = '❌ Terjadi kesalahan. Silakan coba lagi.';
+                errorMessage.className = 'status-message error';
+                errorMessage.style.display = 'block';
+                payButton.disabled = false;
+            });
+        }
+
+        /**
+         * Show success message
+         */
+        function showSuccessMessage() {
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('payButton').style.display = 'none';
+        }
+
+        /**
+         * Go back to previous page
+         */
+        function goBack() {
+            window.history.back();
+        }
+
+        /**
+         * Check payment status on page load (if returning from payment)
+         */
+        window.addEventListener('load', function() {
+            // Optional: Check payment status
+            checkPaymentStatus();
+        });
+
+        /**
+         * Check payment status
+         */
+        function checkPaymentStatus() {
+            fetch('/api/payment/' + orderId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.paymentStatus === 'settlement') {
+                        showSuccessMessage();
+                    }
+                })
+                .catch(error => console.log('Status check failed:', error));
+        }
+    </script>
+</body>
+</html>

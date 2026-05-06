@@ -1,0 +1,315 @@
+{
+  "info": {
+    "name": "TongGo API Documentation (JWT Secure)",
+    "description": "Koleksi Postman untuk pengujian sistem dengan autentikasi JWT, CRUD Order, dan Payment Gateway.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Auth (Login & Register)",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin123\",\n    \"email\": \"admin@tonggo.com\",\n    \"role\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login User (Get JWT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if(jsonData.jwt) {",
+                  "    pm.environment.set(\"jwt_token\", jsonData.jwt);",
+                  "    pm.collectionVariables.set(\"jwt_token\", jsonData.jwt);",
+                  "    console.log(\"Token JWT berhasil disimpan!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Products",
+      "item": [
+        {
+          "name": "Tambah Produk",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Kopi Susu Gula Aren\",\n    \"price\": 25000.0,\n    \"description\": \"Kopi susu dengan gula aren asli\",\n    \"stock\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products/tambah",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "tambah"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Lihat Produk",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/display",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "display"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Orders & Cart",
+      "item": [
+        {
+          "name": "1. Inisiasi Order",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/orders/init?userId=1&tableId=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "init"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "1"
+                },
+                {
+                  "key": "tableId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Tambah Item ke Keranjang",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": 1,\n    \"productId\": 1,\n    \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/keranjang/tambah",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "keranjang",
+                "tambah"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Payment Gateway",
+      "item": [
+        {
+          "name": "1. Proses Pembayaran",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": 1,\n    \"amount\": 50000.0,\n    \"customerName\": \"Tester User\",\n    \"customerEmail\": \"tester@example.com\",\n    \"customerPhone\": \"08123456789\",\n    \"paymentType\": \"bank_transfer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payment/process",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payment",
+                "process"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Midtrans Callback (No Auth Required)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"transaction_time\": \"2024-05-06 14:10:00\",\n    \"transaction_status\": \"settlement\",\n    \"transaction_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"status_code\": \"200\",\n    \"signature_key\": \"ISI_DENGAN_SIGNATURE_ASLI\",\n    \"payment_type\": \"bank_transfer\",\n    \"order_id\": \"ORD-XXXXXX\",\n    \"gross_amount\": \"50000.00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payment/callback",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payment",
+                "callback"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

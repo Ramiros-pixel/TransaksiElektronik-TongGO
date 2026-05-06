@@ -7,7 +7,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.CascadeType;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -18,9 +20,11 @@ import java.time.LocalDateTime;
 public class orderModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long idOrder;
     
+    @Column(name = "order_number", nullable = false, unique = true)
+    private String orderNumber; // Format: ORD-TIMESTAMP-RANDOM (e.g. ORD-1715000000123-ABC)
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private userModel userId;
@@ -35,6 +39,12 @@ public class orderModel {
     @Column(name = "status", nullable = false)
     private Paid status;
 
+    @OneToOne(mappedBy = "orderId", cascade = CascadeType.ALL)
+    private paymentModel payment;
+
     @Column(name = "order_time", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at", nullable = true)
+    private LocalDateTime updatedAt;
 }
