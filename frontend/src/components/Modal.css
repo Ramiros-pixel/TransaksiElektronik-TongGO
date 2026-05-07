@@ -1,0 +1,10 @@
+/* Modal CSS already in index.css — this file is a placeholder */
+/* Additional modal-specific overrides if needed */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}

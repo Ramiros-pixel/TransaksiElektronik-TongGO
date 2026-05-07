@@ -16,8 +16,9 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // Kunci rahasia untuk menandatangani JWT (sebaiknya diletakkan di application.properties untuk produksi)
-    private final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    // Kunci rahasia statis agar token tidak invalid setiap kali server direstart
+    private final String SECRET = "TongGoSuperSecretKeyForJwtAuthenticationVerySecure12345";
+    private final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     // Token berlaku 10 jam
     private final long JWT_TOKEN_VALIDITY = 1000 * 60 * 60 * 10;
