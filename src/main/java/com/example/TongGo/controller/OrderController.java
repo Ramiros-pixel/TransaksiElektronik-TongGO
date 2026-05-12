@@ -57,6 +57,11 @@ public class OrderController {
         return orderService.getOrdersByUser(userId);
     }
 
+    @GetMapping("/{id}/items")
+    public List<com.example.TongGo.model.orderItemsModel> getOrderItems(@PathVariable Long id) {
+        return orderService.getOrderItems(id);
+    }
+
     /**
      * Menghapus order
      */

@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests()
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 // Endpoint ini bebas diakses tanpa token
-                .requestMatchers("/api/auth/**", "/api/payment/callback").permitAll()
+                .requestMatchers("/api/auth/**", "/api/payment/callback", "/api/detection/**").permitAll()
                 // Role-based access contoh:
                 // .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // Semua request lain WAJIB memiliki token JWT

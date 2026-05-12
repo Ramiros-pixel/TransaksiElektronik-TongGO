@@ -37,32 +37,30 @@ public class AuthController {
 
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword())
+                    new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(), authenticationRequest.getPassword())
             );
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(401).body("Username atau password salah");
+            return ResponseEntity.status(401).body("Email atau password salah");
         }
 
         final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(authenticationRequest.getUsername());
+                .loadUserByUsername(authenticationRequest.getEmail());
 
         final String jwt = jwtUtil.generateToken(userDetails);
         
-        userModel user = userRepository.findByUsername(authenticationRequest.getUsername()).get();
+        userModel user = userRepository.findByEmail(authenticationRequest.getEmail()).get();
 
         return ResponseEntity.ok(new AuthResponse(jwt, user.getUsername(), user.getRole().name()));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody userModel user) {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("Username sudah digunakan");
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body("Email sudah digunakan");
         }
         
-        // Default role jika tidak diisi
-        if (user.getRole() == null) {
-            user.setRole(Role.USER);
-        }
+        // Enforce USER role for all registrations
+        user.setRole(Role.USER);
         
         // Harusnya password di-hash menggunakan BCrypt, untuk demo kita simpan plain
         userRepository.save(user);

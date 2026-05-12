@@ -12,6 +12,9 @@ import jakarta.persistence.Table;
 import jakarta.persistence.CascadeType;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
+import jakarta.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 
 @Entity
@@ -41,6 +44,10 @@ public class orderModel {
 
     @OneToOne(mappedBy = "orderId", cascade = CascadeType.ALL)
     private paymentModel payment;
+
+    @OneToMany(mappedBy = "orderId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<orderItemsModel> items;
 
     @Column(name = "order_time", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
