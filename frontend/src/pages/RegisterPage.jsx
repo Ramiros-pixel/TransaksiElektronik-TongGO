@@ -5,7 +5,7 @@ import { toast } from '../components/Toast';
 import './AuthPage.css';
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ username: '', email: '', password: '', role: 'USER' });
+  const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -17,7 +17,7 @@ export default function RegisterPage() {
     if (form.password.length < 6) { toast.error('Password minimal 6 karakter'); return; }
     setLoading(true);
     try {
-      await authAPI.register(form);
+      await authAPI.register({ ...form, role: 'USER' });
       toast.success('Registrasi berhasil! Silakan login.');
       navigate('/login');
     } catch (err) {
@@ -50,13 +50,6 @@ export default function RegisterPage() {
             <label className="form-label">Password</label>
             <input id="reg-password" name="password" type="password" className="form-input"
               placeholder="Minimal 6 karakter..." value={form.password} onChange={handleChange} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Daftar Sebagai</label>
-            <select id="reg-role" name="role" className="form-input" value={form.role} onChange={handleChange}>
-              <option value="USER">User (Pelanggan)</option>
-              <option value="ADMIN">Admin</option>
-            </select>
           </div>
           <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading} id="btn-register">
             {loading ? 'Memproses...' : 'Daftar Sekarang →'}

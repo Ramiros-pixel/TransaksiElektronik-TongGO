@@ -7,6 +7,8 @@ import com.example.TongGo.model.userModel;
 import com.example.TongGo.repository.OrderRepository;
 import com.example.TongGo.repository.TableRepository;
 import com.example.TongGo.repository.UserRepository;
+import com.example.TongGo.model.orderItemsModel;
+import com.example.TongGo.repository.KeranjangRepository;
 import com.example.TongGo.util.OrderNumberGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,9 @@ public class OrderService {
 
     @Autowired
     private TableRepository tableRepository;
+
+    @Autowired
+    private KeranjangRepository keranjangRepository;
 
     @Autowired
     private OrderNumberGenerator orderNumberGenerator;
@@ -64,6 +69,11 @@ public class OrderService {
 
     public List<orderModel> getOrdersByUser(Long userId) {
         return orderRepository.findByUserIdId(userId);
+    }
+
+    public List<orderItemsModel> getOrderItems(Long orderId) {
+        orderModel order = getOrderById(orderId);
+        return keranjangRepository.findByOrderId(order);
     }
 
     @Transactional

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { productAPI, orderAPI, tableAPI } from '../../api/api';
+import { productAPI, orderAPI, tableAPI, detectionAPI } from '../../api/api';
 import ProductCard from '../../components/ProductCard';
 import Modal from '../../components/Modal';
 import { toast } from '../../components/Toast';
@@ -29,6 +29,13 @@ export default function AdminDashboard() {
 
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('products');
+  const [detectionLoading, setDetectionLoading] = useState(false);
+  const [latestScan, setLatestScan] = useState(null);
+  
+  const [orderItemsModal, setOrderItemsModal] = useState(false);
+  const [selectedOrderItems, setSelectedOrderItems] = useState([]);
+  const [loadingItems, setLoadingItems] = useState(false);
+  const [currentOrderNum, setCurrentOrderNum] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -134,12 +141,28 @@ export default function AdminDashboard() {
     } catch { toast.error('Gagal menghapus meja'); }
   };
 
+  const handleShowDetails = async (order) => {
+    setLoadingItems(true);
+    setCurrentOrderNum(order.orderNumber || `ORD-${order.idOrder}`);
+    setOrderItemsModal(true);
+    try {
+      const res = await orderAPI.getItems(order.idOrder);
+      setSelectedOrderItems(res.data);
+    } catch {
+      toast.error('Gagal memuat detail pesanan');
+    } finally {
+      setLoadingItems(false);
+    }
+  };
+
   const openAddTable = () => { setEditTableTarget(null); setTableForm(emptyTableForm); setTableModal(true); };
   const openEditTable = (t) => { setEditTableTarget(t); setTableForm({ tableNumber: t.tableNumber, qrIdentify: t.qrIdentify || '', isActive: t.isActive }); setTableModal(true); };
 
   const totalRevenue = orders
     .filter(o => o.status === 'PAID')
     .reduce((s, o) => s + (o.totalPrice || 0), 0);
+
+  const API_BASE = 'http://localhost:8080';
 
   const paidCount = orders.filter(o => o.status === 'PAID').length;
   const unpaidCount = orders.filter(o => o.status !== 'PAID').length;
@@ -199,6 +222,10 @@ export default function AdminDashboard() {
             className={`tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
             onClick={() => setActiveTab('orders')}
           >📋 Pesanan ({orders.length})</button>
+          <button
+            className={`tab-btn ${activeTab === 'detection' ? 'active' : ''}`}
+            onClick={() => setActiveTab('detection')}
+          >🔍 Deteksi Uang</button>
         </div>
 
         {/* Products Tab */}
@@ -322,7 +349,10 @@ export default function AdminDashboard() {
                           {order.createdAt ? new Date(order.createdAt).toLocaleString('id-ID') : '-'}
                         </td>
                         <td>
-                          <button className="btn btn-danger btn-sm" onClick={() => handleDeleteOrder(order.idOrder)}>🗑️</button>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button className="btn btn-primary btn-sm" onClick={() => handleShowDetails(order)} style={{ background: 'transparent', border: '1px solid var(--accent-primary)' }}>👁️ Detail</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleDeleteOrder(order.idOrder)}>🗑️</button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -330,6 +360,95 @@ export default function AdminDashboard() {
                 </table>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Detection Tab */}
+        {activeTab === 'detection' && (
+          <div className="detection-tab">
+            <div className="tab-action-bar">
+              <h3>Sistem Deteksi Uang Masuk</h3>
+              <p style={{color: 'var(--text-muted)', fontSize: '0.9rem'}}>Verifikasi keaslian uang fisik menggunakan Computer Vision</p>
+            </div>
+            
+            <div className="detection-grid" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '20px'}}>
+              <div className="detection-control-card" style={{background: 'var(--bg-card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--glass-border)'}}>
+                <div style={{textAlign: 'center', marginBottom: '24px'}}>
+                  <div style={{fontSize: '3rem', marginBottom: '16px'}}>📷</div>
+                  <h4>Kontrol Kamera</h4>
+                  <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px'}}>Klik tombol di bawah untuk membuka kamera deteksi pada komputer server.</p>
+                  <button 
+                    className="btn btn-primary btn-lg btn-full" 
+                    onClick={async () => {
+                      setDetectionLoading(true);
+                      try {
+                        const res = await detectionAPI.start();
+                        toast.success(res.data.message);
+                      } catch {
+                        toast.error('Gagal membuka kamera deteksi');
+                      } finally {
+                        setDetectionLoading(false);
+                      }
+                    }}
+                    disabled={detectionLoading}
+                  >
+                    {detectionLoading ? 'Membuka...' : '🚀 Buka Kamera Deteksi'}
+                  </button>
+                </div>
+                
+                <div className="detection-info" style={{borderTop: '1px solid var(--glass-border)', paddingTop: '16px'}}>
+                  <h5 style={{marginBottom: '8px', fontSize: '0.9rem'}}>Instruksi Penggunaan:</h5>
+                  <ul style={{fontSize: '0.8rem', color: 'var(--text-muted)', paddingLeft: '16px'}}>
+                    <li>Pastikan kamera web terhubung.</li>
+                    <li>Arahkan uang ke area kotak hijau di layar kamera.</li>
+                    <li>Tekan tombol 'S' pada keyboard untuk memindai.</li>
+                    <li>Hasil akan tersimpan secara otomatis.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="detection-result-card" style={{background: 'var(--bg-card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--glass-border)'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                  <h4>Hasil Scan Terakhir</h4>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setLatestScan(`${detectionAPI.getLatestScan()}?t=${Date.now()}`)}>🔄 Refresh</button>
+                </div>
+                
+                <div className="result-preview" style={{width: '100%', height: '240px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px dashed var(--glass-border)'}}>
+                  {latestScan ? (
+                    <img src={latestScan} alt="Latest Scan" style={{width: '100%', height: '100%', objectFit: 'contain'}} />
+                  ) : (
+                    <div style={{textAlign: 'center', color: 'var(--text-muted)'}}>
+                      <div style={{fontSize: '2rem'}}>🖼️</div>
+                      <p style={{fontSize: '0.8rem'}}>Belum ada data scan</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div style={{marginTop: '16px'}}>
+                  <p style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>
+                    *Gambar di atas adalah hasil tangkapan layar terakhir dari proses deteksi.
+                  </p>
+                  <a 
+                    href={`${API_BASE}/api/detection/latest-scan`} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="auth-link"
+                    style={{fontSize: '0.85rem', display: 'block', marginTop: '8px'}}
+                  >
+                    🖼️ Buka gambar resolusi penuh
+                  </a>
+                  <a 
+                    href={detectionAPI.getLatestPdf()} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="btn btn-ghost btn-sm btn-full"
+                    style={{marginTop: '12px', border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)'}}
+                  >
+                    📄 Download Laporan PDF (Hasil Scan)
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -388,6 +507,49 @@ export default function AdminDashboard() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Order Items Detail Modal */}
+      <Modal isOpen={orderItemsModal} onClose={() => setOrderItemsModal(false)} title={`📋 Detail Pesanan: ${currentOrderNum}`}>
+        {loadingItems ? (
+          <div className="loading-center"><div className="spinner" /></div>
+        ) : selectedOrderItems.length === 0 ? (
+          <div className="empty-state"><p>Tidak ada item dalam pesanan ini.</p></div>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Produk</th>
+                  <th>Harga Satuan</th>
+                  <th>Jumlah</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedOrderItems.map(item => (
+                  <tr key={item.id_item_Order}>
+                    <td style={{fontWeight: 500}}>{item.productId?.name}</td>
+                    <td>{formatRupiah(item.productId?.price)}</td>
+                    <td>{item.quantity}x</td>
+                    <td style={{fontWeight: 600, color: 'var(--accent-primary)'}}>{formatRupiah(item.subtotal)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan="3" style={{textAlign: 'right', fontWeight: 600, padding: '16px'}}>Total Pesanan:</td>
+                  <td style={{fontWeight: 700, color: 'var(--accent-primary)', fontSize: '1.1rem', padding: '16px'}}>
+                    {formatRupiah(selectedOrderItems.reduce((acc, curr) => acc + (curr.subtotal || 0), 0))}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+        <div className="modal-footer">
+          <button className="btn btn-primary btn-full" onClick={() => setOrderItemsModal(false)}>Tutup</button>
+        </div>
       </Modal>
     </div>
   );

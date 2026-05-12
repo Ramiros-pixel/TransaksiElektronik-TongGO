@@ -61,6 +61,7 @@ export const orderAPI = {
   getAll: () => api.get('/api/orders/list'),
   getById: (id) => api.get(`/api/orders/${id}`),
   getByUser: (userId) => api.get(`/api/orders/user/${userId}`),
+  getItems: (id) => api.get(`/api/orders/${id}/items`),
   delete: (id) => api.delete(`/api/orders/${id}`),
 };
 
@@ -68,6 +69,13 @@ export const orderAPI = {
 export const paymentAPI = {
   process: (data) => api.post('/api/payment/process', data),
   getStatus: (orderId) => api.get(`/api/payment/${orderId}`),
+};
+
+// ===== DETECTION =====
+export const detectionAPI = {
+  start: () => api.post('/api/detection/start'),
+  getLatestScan: () => `${API_BASE}/api/detection/latest-scan`,
+  getLatestPdf: () => `${API_BASE}/api/detection/latest-pdf`,
 };
 
 export default api;

@@ -25,18 +25,6 @@ public class PaymentResponseDTO {
 
     private String message;
 
-    // Manual constructor matching the controller's usage
-    public PaymentResponseDTO(Long paymentId, Long orderId, String midtransId, String redirectUrl, String paymentStatus, Double amount, Boolean success, String message) {
-        this.paymentId = paymentId;
-        this.orderId = orderId;
-        this.midtransId = midtransId;
-        this.redirectUrl = redirectUrl;
-        this.paymentStatus = paymentStatus;
-        this.amount = amount;
-        this.success = success;
-        this.message = message;
-    }
-
     public static PaymentResponseDTO error(String message) {
         return new PaymentResponseDTO(null, null, null, null, null, null, false, message);
     }

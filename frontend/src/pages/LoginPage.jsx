@@ -6,7 +6,7 @@ import { toast } from '../components/Toast';
 import './AuthPage.css';
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.username || !form.password) { toast.error('Isi semua field!'); return; }
+    if (!form.email || !form.password) { toast.error('Isi semua field!'); return; }
     setLoading(true);
     try {
       const res = await authAPI.login(form);
@@ -24,7 +24,7 @@ export default function LoginPage() {
       toast.success(`Selamat datang, ${username}! 👋`);
       navigate(role === 'ADMIN' ? '/admin' : '/menu');
     } catch (err) {
-      toast.error(err.response?.data || 'Login gagal. Periksa username & password.');
+      toast.error(err.response?.data || 'Login gagal. Periksa email & password.');
     } finally {
       setLoading(false);
     }
@@ -40,16 +40,16 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label className="form-label">Username</label>
+            <label className="form-label">Email</label>
             <input
-              id="username"
-              name="username"
-              type="text"
+              id="email"
+              name="email"
+              type="email"
               className="form-input"
-              placeholder="Masukkan username..."
-              value={form.username}
+              placeholder="Masukkan email..."
+              value={form.email}
               onChange={handleChange}
-              autoComplete="username"
+              autoComplete="email"
             />
           </div>
           <div className="form-group">
