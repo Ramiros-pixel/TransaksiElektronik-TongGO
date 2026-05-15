@@ -74,4 +74,27 @@ public class OrderController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @Autowired
+    private com.example.TongGo.service.ReceiptService receiptService;
+
+    /**
+     * Download PDF Receipt
+     */
+    @GetMapping("/{id}/receipt")
+    public ResponseEntity<byte[]> downloadReceipt(@PathVariable Long id) {
+        try {
+            orderModel order = orderService.getOrderById(id);
+            byte[] pdfBytes = receiptService.generateReceiptPdf(order);
+
+            String filename = "Receipt-" + (order.getOrderNumber() != null ? order.getOrderNumber() : id) + ".pdf";
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/pdf")
+                    .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            return ResponseEntity.status(404).body(null);
+        }
+    }
 }

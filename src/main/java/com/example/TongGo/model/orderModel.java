@@ -11,9 +11,12 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.CascadeType;
 import lombok.Data;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 import java.util.List;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Enumerated;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 
@@ -43,10 +46,15 @@ public class orderModel {
     private Paid status;
 
     @OneToOne(mappedBy = "orderId", cascade = CascadeType.ALL)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private paymentModel payment;
 
     @OneToMany(mappedBy = "orderId", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<orderItemsModel> items;
 
     @Column(name = "order_time", nullable = false)

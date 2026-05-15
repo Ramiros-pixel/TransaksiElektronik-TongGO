@@ -159,13 +159,13 @@ export default function AdminDashboard() {
   const openEditTable = (t) => { setEditTableTarget(t); setTableForm({ tableNumber: t.tableNumber, qrIdentify: t.qrIdentify || '', isActive: t.isActive }); setTableModal(true); };
 
   const totalRevenue = orders
-    .filter(o => o.status === 'PAID')
+    .filter(o => o.status?.toString().toLowerCase() === 'paid' || o.status?.toString() === '1')
     .reduce((s, o) => s + (o.totalPrice || 0), 0);
 
   const API_BASE = 'http://localhost:8080';
 
-  const paidCount = orders.filter(o => o.status === 'PAID').length;
-  const unpaidCount = orders.filter(o => o.status !== 'PAID').length;
+  const paidCount = orders.filter(o => o.status?.toString().toLowerCase() === 'paid' || o.status?.toString() === '1').length;
+  const unpaidCount = orders.filter(o => o.status?.toString().toLowerCase() !== 'paid' && o.status?.toString() !== '1').length;
 
   return (
     <div className="admin-page" style={{ position: 'relative', zIndex: 1 }}>
@@ -226,6 +226,10 @@ export default function AdminDashboard() {
             className={`tab-btn ${activeTab === 'detection' ? 'active' : ''}`}
             onClick={() => setActiveTab('detection')}
           >🔍 Deteksi Uang</button>
+          <button
+            className={`tab-btn ${activeTab === 'income' ? 'active' : ''}`}
+            onClick={() => setActiveTab('income')}
+          >💰 Penghasilan</button>
         </div>
 
         {/* Products Tab */}
@@ -341,7 +345,7 @@ export default function AdminDashboard() {
                         <td>#{order.tableId?.tableNumber || order.tableId?.id || '-'}</td>
                         <td style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>{formatRupiah(order.totalPrice)}</td>
                         <td>
-                          {order.status === 'PAID'
+                          { (order.status?.toString().toLowerCase() === 'paid' || order.status?.toString() === '1')
                             ? <span className="badge badge-success">✅ LUNAS</span>
                             : <span className="badge badge-warning">⏳ PENDING</span>}
                         </td>
@@ -378,7 +382,7 @@ export default function AdminDashboard() {
                   <h4>Kontrol Kamera</h4>
                   <p style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '20px'}}>Klik tombol di bawah untuk membuka kamera deteksi pada komputer server.</p>
                   <button 
-                    className="btn btn-primary btn-lg btn-full" 
+                    className="btn btn-primary btn-sm btn-full" 
                     onClick={async () => {
                       setDetectionLoading(true);
                       try {
@@ -449,6 +453,93 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Income Tab */}
+        {activeTab === 'income' && (
+          <div className="income-tab">
+            <div className="tab-action-bar">
+              <h3>💰 Pencatatan Penghasilan</h3>
+              <div className="income-summary-badge">
+                Total Pendapatan: <span style={{color: 'var(--success)', fontWeight: 700}}>{formatRupiah(totalRevenue)}</span>
+              </div>
+            </div>
+
+            <div className="stats-grid" style={{marginBottom: '24px'}}>
+              <div className="stat-card" style={{background: 'var(--bg-card)'}}>
+                <div className="stat-card-body">
+                  <div className="stat-card-label">Total Transaksi Lunas</div>
+                  <div className="stat-card-num" style={{color: 'var(--success)'}}>{paidCount}</div>
+                </div>
+              </div>
+              <div className="stat-card" style={{background: 'var(--bg-card)'}}>
+                <div className="stat-card-body">
+                  <div className="stat-card-label">Rata-rata per Transaksi</div>
+                  <div className="stat-card-num">
+                    {formatRupiah(paidCount > 0 ? totalRevenue / paidCount : 0)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {orders.filter(o => o.status?.toString().toLowerCase() === 'paid').length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">💰</div>
+                <p className="empty-title">Belum ada penghasilan masuk</p>
+              </div>
+            ) : (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tanggal</th>
+                      <th>No. Pesanan</th>
+                      <th>Pelanggan</th>
+                      <th>Metode</th>
+                      <th>Jumlah</th>
+                      <th>Status</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders
+                      .filter(o => o.status?.toString().toLowerCase() === 'paid')
+                      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                      .map(order => (
+                        <tr key={order.idOrder}>
+                          <td style={{fontSize: '0.85rem'}}>
+                            {new Date(order.createdAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                          </td>
+                          <td>
+                            <code style={{color: 'var(--accent-primary)'}}>{order.orderNumber || `ORD-${order.idOrder}`}</code>
+                          </td>
+                          <td>
+                            <div style={{display: 'flex', flexDirection: 'column'}}>
+                              <span style={{fontWeight: 500}}>{order.userId?.username || 'Guest'}</span>
+                              <small style={{color: 'var(--text-muted)'}}>Meja #{order.tableId?.tableNumber}</small>
+                            </div>
+                          </td>
+                          <td>
+                            <span className="badge badge-info" style={{fontSize: '0.75rem'}}>
+                              {order.payment?.paymentMethod || order.payment?.paymentType || 'Midtrans'}
+                            </span>
+                          </td>
+                          <td style={{fontWeight: 600, color: 'var(--success)'}}>
+                            {formatRupiah(order.totalPrice)}
+                          </td>
+                          <td>
+                            <span className="badge badge-success">✅ PAID</span>
+                          </td>
+                          <td>
+                            <button className="btn btn-primary btn-sm" onClick={() => handleShowDetails(order)} style={{ background: 'transparent', border: '1px solid var(--accent-primary)' }}>👁️ Detail</button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>

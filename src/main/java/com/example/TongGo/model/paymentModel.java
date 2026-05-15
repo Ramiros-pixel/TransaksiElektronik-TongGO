@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 
 @Entity
 @Table(name = "payments")
@@ -24,6 +26,9 @@ public class paymentModel {
 
     @OneToOne
     @JoinColumn(name = "order_id", nullable = false, unique = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private orderModel orderId;
 
     @Column(name = "midtrans_id", nullable = false)

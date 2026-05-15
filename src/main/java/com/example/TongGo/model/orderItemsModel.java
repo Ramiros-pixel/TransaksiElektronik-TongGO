@@ -8,6 +8,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 
@@ -24,6 +26,8 @@ public class orderItemsModel {
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
     @JsonBackReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private orderModel orderId;
 
     @ManyToOne
