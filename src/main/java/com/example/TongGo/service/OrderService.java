@@ -44,8 +44,8 @@ public class OrderService {
         userModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
         
-        TableModel table = tableRepository.findById(tableId)
-                .orElseThrow(() -> new RuntimeException("Meja tidak ditemukan"));
+        TableModel table = tableRepository.findByTableNumber(tableId.intValue())
+                .orElseThrow(() -> new RuntimeException("Meja nomor " + tableId + " tidak ditemukan"));
 
         orderModel order = new orderModel();
         order.setUserId(user);
@@ -58,19 +58,23 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    @Transactional(readOnly = true)
     public List<orderModel> getAllOrders() {
-        return orderRepository.findAll();
+        return orderRepository.findAllByOrderByCreatedAtDesc();
     }
 
+    @Transactional(readOnly = true)
     public orderModel getOrderById(Long id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order tidak ditemukan"));
     }
 
+    @Transactional(readOnly = true)
     public List<orderModel> getOrdersByUser(Long userId) {
-        return orderRepository.findByUserIdId(userId);
+        return orderRepository.findByUserIdIdOrderByCreatedAtDesc(userId);
     }
 
+    @Transactional(readOnly = true)
     public List<orderItemsModel> getOrderItems(Long orderId) {
         orderModel order = getOrderById(orderId);
         return keranjangRepository.findByOrderId(order);

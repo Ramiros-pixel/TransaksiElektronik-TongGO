@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { orderAPI } from '../api/api';
 import { toast } from '../components/Toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import Modal from '../components/Modal';
 import './OrdersPage.css';
 
 const formatRupiah = (n) =>
@@ -14,9 +15,10 @@ const formatDate = (dt) => {
 };
 
 const statusBadge = (status) => {
-  if (!status) return <span className="badge badge-warning">PENDING</span>;
-  const s = status.toString().toUpperCase();
-  if (s === 'PAID') return <span className="badge badge-success">✅ LUNAS</span>;
+  if (status === null || status === undefined) return <span className="badge badge-warning">⏳ BELUM BAYAR</span>;
+  const s = status.toString().toLowerCase();
+  if (s === 'paid' || s === '1') return <span className="badge badge-success">✅ SELESAI</span>;
+  if (s === 'cancelled' || s === 'cancel' || s === 'failed' || s === '2') return <span className="badge badge-danger">❌ BATAL</span>;
   return <span className="badge badge-warning">⏳ BELUM BAYAR</span>;
 };
 
@@ -24,10 +26,18 @@ export default function OrdersPage() {
   const { user, isAdmin } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchOrders();
+    // Check if redirected from successful payment
+    if (location.state?.paymentSuccess) {
+      setShowSuccess(true);
+      // Clear state so modal doesn't reappear on refresh
+      window.history.replaceState({}, document.title);
+    }
   }, []);
 
   const fetchOrders = async () => {
@@ -53,6 +63,10 @@ export default function OrdersPage() {
     } catch {
       toast.error('Gagal menghapus pesanan');
     }
+  };
+
+  const handleDownloadReceipt = (id) => {
+    window.open(orderAPI.getReceipt(id), '_blank');
   };
 
   return (
@@ -86,12 +100,20 @@ export default function OrdersPage() {
                   </div>
                   <div style={{display:'flex',alignItems:'center',gap:10}}>
                     {statusBadge(order.status)}
-                    {order.status !== 'PAID' && (
+                    { (order.status?.toString().toLowerCase() !== 'paid' && order.status?.toString() !== '1') ? (
                       <button
                         className="btn btn-primary btn-sm"
                         onClick={() => navigate(`/payment/${order.idOrder}`, { state: { order, total: order.totalPrice } })}
                       >
                         💳 Bayar
+                      </button>
+                    ) : (
+                      <button
+                        className="btn btn-outline btn-sm"
+                        onClick={() => handleDownloadReceipt(order.idOrder)}
+                        style={{borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)'}}
+                      >
+                        📄 Download PDF
                       </button>
                     )}
                     {isAdmin() && (
@@ -99,6 +121,18 @@ export default function OrdersPage() {
                     )}
                   </div>
                 </div>
+                
+                {order.items && order.items.length > 0 && (
+                  <div className="order-items-summary">
+                    {order.items.map(item => (
+                      <div key={item.id_item_Order} className="order-item-row">
+                        <span>{item.productId?.name || 'Produk'}</span>
+                        <span>x{item.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="order-footer">
                   <span>Total: <strong className="order-total">{formatRupiah(order.totalPrice)}</strong></span>
                   {isAdmin() && order.userId && (
@@ -110,6 +144,21 @@ export default function OrdersPage() {
           </div>
         )}
       </div>
+
+      {/* Success Payment Modal */}
+      <Modal isOpen={showSuccess} onClose={() => setShowSuccess(false)} title="🎉 Pembayaran Berhasil!">
+        <div style={{textAlign: 'center', padding: '20px 0'}}>
+          <div style={{fontSize: '4rem', marginBottom: '20px'}}>✅</div>
+          <h2 style={{color: 'var(--success)', marginBottom: '10px'}}>Transaksi Berhasil</h2>
+          <p style={{color: 'var(--text-secondary)', marginBottom: '24px'}}>
+            Terima kasih! Pembayaran Anda telah kami terima. 
+            Pesanan Anda sekarang berstatus <strong>SELESAI</strong>.
+          </p>
+          <button className="btn btn-primary btn-full" onClick={() => setShowSuccess(false)}>
+            Oke, Lihat Pesanan
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

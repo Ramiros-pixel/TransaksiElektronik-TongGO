@@ -24,7 +24,11 @@ export default function CartPage() {
     setLoading(true);
     try {
       // 1. Create order first
-      const orderRes = await orderAPI.create(user?.id || 1, parseInt(tableId));
+      if (!user?.id) {
+        toast.error('Sesi login tidak valid atau kadaluarsa. Silakan Logout dan Login kembali.');
+        return;
+      }
+      const orderRes = await orderAPI.create(user.id, parseInt(tableId));
       const order = orderRes.data;
 
       // 2. Add items to the created order

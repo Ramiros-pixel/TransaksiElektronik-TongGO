@@ -59,9 +59,34 @@ public class PaymentService {
                 orderRepository.save(order);
             }
 
+            // Check if payment already exists for this order
+            Optional<paymentModel> existingPayment = paymentRepository.findByOrderIdIdOrder(order.getIdOrder());
+            
+            if (existingPayment.isPresent()) {
+                paymentModel p = existingPayment.get();
+                // If payment is already pending or successful, reuse the existing midtrans token
+                if (p.getMidtransId() != null && !p.getMidtransId().isEmpty() && !p.getPaymentStatus().equals("failed") && !p.getPaymentStatus().equals("expire")) {
+                    PaymentResponseDTO response = new PaymentResponseDTO();
+                    response.setPaymentId(p.getIdPayment());
+                    response.setOrderId(order.getIdOrder());
+                    response.setMidtransId(p.getMidtransId());
+                    response.setRedirectUrl(p.getRedirectUrl());
+                    response.setPaymentStatus(p.getPaymentStatus());
+                    response.setAmount(p.getGrossAmount());
+                    response.setSuccess(true);
+                    response.setMessage("Reusing existing transaction");
+                    return response;
+                }
+            }
+
             // Prepare Midtrans payload
             Map<String, Object> transactionDetails = new HashMap<>();
-            transactionDetails.put("order_id", order.getOrderNumber());
+            // Use order number, but append timestamp if it's a retry to avoid "order_id taken"
+            String midtransOrderId = order.getOrderNumber();
+            if (existingPayment.isPresent()) {
+                midtransOrderId += "-" + System.currentTimeMillis();
+            }
+            transactionDetails.put("order_id", midtransOrderId);
             transactionDetails.put("gross_amount", request.getAmount().intValue());
 
             Map<String, Object> customerDetails = new HashMap<>();
@@ -80,15 +105,19 @@ public class PaymentService {
             String token = snapResponse.getString("token");
             String redirectUrl = snapResponse.getString("redirect_url");
 
-            // Save payment record
-            paymentModel payment = new paymentModel();
-            payment.setOrderId(order);
-            payment.setMidtransId(token); // Store token as midtransId for reference
+            // Save or Update payment record
+            paymentModel payment = existingPayment.orElse(new paymentModel());
+            if (!existingPayment.isPresent()) {
+                payment.setOrderId(order);
+                payment.setCreatedAt(LocalDateTime.now());
+            }
+            
+            payment.setMidtransId(token); 
             payment.setPaymentType(request.getPaymentType());
             payment.setGrossAmount(request.getAmount());
             payment.setPaymentStatus("pending");
             payment.setRedirectUrl(redirectUrl);
-            payment.setCreatedAt(LocalDateTime.now());
+            payment.setUpdatedAt(LocalDateTime.now());
 
             paymentRepository.save(payment);
 

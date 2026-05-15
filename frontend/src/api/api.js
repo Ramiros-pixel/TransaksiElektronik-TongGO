@@ -63,6 +63,7 @@ export const orderAPI = {
   getByUser: (userId) => api.get(`/api/orders/user/${userId}`),
   getItems: (id) => api.get(`/api/orders/${id}/items`),
   delete: (id) => api.delete(`/api/orders/${id}`),
+  getReceipt: (id) => `${API_BASE}/api/orders/${id}/receipt`,
 };
 
 // ===== PAYMENT =====

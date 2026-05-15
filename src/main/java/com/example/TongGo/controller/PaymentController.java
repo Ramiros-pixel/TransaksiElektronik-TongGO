@@ -45,49 +45,6 @@ public class PaymentController {
     }
 
     /**
-     * Handle Midtrans callback/notification
-     * POST /api/payment/callback
-     */
-    @PostMapping("/callback")
-    public ResponseEntity<?> handleCallback(@RequestBody MidtransCallbackDTO callback) {
-        try {
-            // Verify signature
-            boolean isValid = signatureUtil.verifySignature(
-                    callback.getOrderId(),
-                    callback.getStatusCode(),
-                    callback.getGrossAmount(),
-                    callback.getSignatureKey()
-            );
-
-            if (!isValid) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(new HashMap<String, String>() {{
-                            put("status", "error");
-                            put("message", "Invalid signature");
-                        }});
-            }
-
-            // Process payment notification
-            paymentService.handlePaymentNotification(callback);
-
-            // Return 200 OK to acknowledge receipt
-            return ResponseEntity.ok(new HashMap<String, String>() {{
-                put("status", "ok");
-                put("message", "Notification received and processed");
-            }});
-
-        } catch (Exception e) {
-            // Still return 200 OK but log the error
-            System.err.println("Error processing callback: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.ok(new HashMap<String, String>() {{
-                put("status", "error");
-                put("message", e.getMessage());
-            }});
-        }
-    }
-
-    /**
      * Get payment status by order ID
      * GET /api/payment/{orderId}
      */

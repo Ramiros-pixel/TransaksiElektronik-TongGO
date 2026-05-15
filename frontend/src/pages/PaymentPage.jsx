@@ -57,7 +57,10 @@ export default function PaymentPage() {
         window.open(redirectUrl, '_blank');
       } else if (snapToken && window.snap) {
         window.snap.pay(snapToken, {
-          onSuccess: () => { toast.success('Pembayaran berhasil! 🎉'); navigate('/orders'); },
+          onSuccess: () => { 
+            toast.success('Pembayaran berhasil! 🎉'); 
+            navigate('/orders', { state: { paymentSuccess: true } }); 
+          },
           onPending: () => toast.info('Pembayaran sedang diproses'),
           onError: () => toast.error('Pembayaran gagal'),
           onClose: () => toast.info('Jendela pembayaran ditutup'),
@@ -74,6 +77,7 @@ export default function PaymentPage() {
   };
 
   const st = payment ? (statusInfo[payment.paymentStatus] || statusInfo.pending) : null;
+  const orderStatus = payment?.paymentStatus || '';
 
   return (
     <div className="payment-page" style={{position:'relative',zIndex:1}}>
@@ -123,7 +127,7 @@ export default function PaymentPage() {
             </div>
 
             {/* Payment Methods */}
-            {!payment || payment.paymentStatus === 'pending' ? (
+            {(!payment || payment.paymentStatus === 'pending') && (orderStatus !== 'paid' && orderStatus !== '1') ? (
               <>
                 <div className="payment-methods">
                   <div className="pm-card pm-active">💳 Kartu Kredit</div>

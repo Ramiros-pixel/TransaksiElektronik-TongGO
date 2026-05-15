@@ -16,6 +16,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
+import com.example.TongGo.security.JwtRequestFilter;
+import com.example.TongGo.security.CustomUserDetailsService;
+import com.example.TongGo.security.JwtUtil;
 
 @Configuration
 @EnableWebSecurity
@@ -45,22 +48,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable()
-                // Izinkan preflight request CORS
-                .authorizeHttpRequests()
+        http
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                // Endpoint ini bebas diakses tanpa token
-                .requestMatchers("/api/auth/**", "/api/payment/callback", "/api/detection/**").permitAll()
-                // Role-based access contoh:
-                // .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                // Semua request lain WAJIB memiliki token JWT
+                .requestMatchers("/api/auth/**", "/api/payment/callback", "/payment/callback", "/api/detection/**", "/api/orders/*/receipt").permitAll()
                 .anyRequest().authenticated()
-                .and()
-                // Matikan session karena kita pakai JWT (stateless)
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        
-        // Tambahkan filter JWT sebelum UsernamePasswordAuthenticationFilter standar Spring
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+            )
+            .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
