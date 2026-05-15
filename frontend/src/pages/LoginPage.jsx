@@ -19,8 +19,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await authAPI.login(form);
-      const { jwt, username, role } = res.data;
-      login(jwt, { username, role });
+      const { jwt, id, username, role } = res.data;
+      login(jwt, { id, username, role });
       toast.success(`Selamat datang, ${username}! 👋`);
       navigate(role === 'ADMIN' ? '/admin' : '/menu');
     } catch (err) {

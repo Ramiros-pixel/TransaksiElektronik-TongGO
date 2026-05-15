@@ -50,7 +50,7 @@ public class AuthController {
         
         userModel user = userRepository.findByEmail(authenticationRequest.getEmail()).get();
 
-        return ResponseEntity.ok(new AuthResponse(jwt, user.getUsername(), user.getRole().name()));
+        return ResponseEntity.ok(new AuthResponse(jwt, user.getId(), user.getUsername(), user.getRole().name()));
     }
 
     @PostMapping("/register")

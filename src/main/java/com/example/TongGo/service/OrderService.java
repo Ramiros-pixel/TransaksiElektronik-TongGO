@@ -44,8 +44,8 @@ public class OrderService {
         userModel user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User tidak ditemukan"));
         
-        TableModel table = tableRepository.findById(tableId)
-                .orElseThrow(() -> new RuntimeException("Meja tidak ditemukan"));
+        TableModel table = tableRepository.findByTableNumber(tableId.intValue())
+                .orElseThrow(() -> new RuntimeException("Meja nomor " + tableId + " tidak ditemukan"));
 
         orderModel order = new orderModel();
         order.setUserId(user);
