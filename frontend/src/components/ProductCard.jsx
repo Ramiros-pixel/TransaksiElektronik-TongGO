@@ -19,9 +19,14 @@ export default function ProductCard({ product, onEdit, onDelete, isAdmin }) {
   return (
     <div className="product-card">
       <div className="product-image">
-        <span className="product-emoji">{emoji}</span>
+        {product.imageUrl ? (
+          <img className="product-photo" src={product.imageUrl} alt={product.name} />
+        ) : (
+          <span className="product-emoji">{emoji}</span>
+        )}
         <div className="product-glow" />
       </div>
+
 
       <div className="product-body">
         <h3 className="product-name">{product.name}</h3>

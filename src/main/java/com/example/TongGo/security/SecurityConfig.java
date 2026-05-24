@@ -14,6 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import com.example.TongGo.security.JwtRequestFilter;
@@ -55,6 +56,19 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**", "/api/payment/callback", "/payment/callback", "/api/detection/**", "/api/orders/*/receipt", "/api/tables/qr/**").permitAll()
+                .requestMatchers(
+                    "/api/auth/**",
+                    "/api/payment/**",
+                    "/payment/callback",
+                    "/api/detection/**",
+                    "/api/orders/*/receipt",
+                    "/api/orders/init",
+                    "/api/orders/*",
+                    "/api/orders/*/items",
+                    "/api/keranjang/**",
+                    "/api/tables/**",
+                    "/api/products/display"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

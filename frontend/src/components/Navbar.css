@@ -25,9 +25,16 @@
   font-weight: 800;
   flex-shrink: 0;
 }
-.logo-icon { font-size: 1.4rem; }
-.logo-text { color: var(--text-primary); letter-spacing: -0.5px; }
-.logo-accent { color: var(--accent-primary); }
+.logo-icon {
+  font-size: 1.4rem;
+}
+.logo-text {
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+.logo-accent {
+  color: var(--accent-primary);
+}
 
 /* Links */
 .navbar-links {
@@ -43,10 +50,13 @@
   color: var(--text-secondary);
   transition: var(--transition);
 }
-.nav-link:hover { color: var(--text-primary); background: var(--bg-card); }
+.nav-link:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
 .nav-link.active {
   color: var(--accent-primary);
-  background: rgba(249,115,22,0.1);
+  background: rgba(249, 115, 22, 0.1);
 }
 
 /* Right */
@@ -68,17 +78,24 @@
   transition: var(--transition);
   line-height: 1;
 }
-.cart-btn:hover { border-color: var(--border-hover); background: var(--bg-card-hover); }
+.cart-btn:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+}
 .cart-badge {
   position: absolute;
-  top: -6px; right: -6px;
+  top: -6px;
+  right: -6px;
   background: var(--accent-primary);
   color: white;
   font-size: 0.65rem;
   font-weight: 700;
-  width: 18px; height: 18px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 2px solid var(--bg-primary);
 }
 
@@ -93,15 +110,32 @@
   padding: 5px 12px 5px 5px;
 }
 .user-avatar {
-  width: 28px; height: 28px;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-gold));
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary),
+    var(--accent-gold)
+  );
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 0.75rem;
   font-weight: 700;
   color: white;
   flex-shrink: 0;
 }
+
+.user-avatar-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
 .user-name {
   font-size: 0.85rem;
   font-weight: 500;
@@ -109,6 +143,10 @@
 }
 
 @media (max-width: 768px) {
-  .navbar-links { display: none; }
-  .user-name { display: none; }
+  .navbar-links {
+    display: none;
+  }
+  .user-name {
+    display: none;
+  }
 }

@@ -29,4 +29,8 @@ public class productsModel {
 
     @Column(name = "description", nullable = false)
     private String description;
+
+    @Column(name = "image_url", nullable = true)
+    private String imageUrl;
 }
+
