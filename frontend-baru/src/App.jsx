@@ -7,6 +7,7 @@ import Receipt from './pages/Receipt.jsx'
 import AdminLogin from './pages/AdminLogin.jsx'
 import Admin from './pages/Admin.jsx'
 import AdminMenu from './pages/AdminMenu.jsx'
+import AdminTable from './pages/AdminTable.jsx'
 
 function App() {
   const [cart, setCart] = useState([]);
@@ -140,6 +141,7 @@ function App() {
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin" element={<Admin formatRupiah={formatRupiah} />} />
           <Route path="/admin-menu" element={<AdminMenu />} />
+          <Route path="/admin-tables" element={<AdminTable />} />
         </Routes>
       </main>
 

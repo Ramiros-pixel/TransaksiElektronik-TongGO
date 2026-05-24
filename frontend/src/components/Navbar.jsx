@@ -45,7 +45,11 @@ export default function Navbar() {
                 </Link>
               )}
               <div className="user-pill">
-                <span className="user-avatar">{user?.username?.[0]?.toUpperCase()}</span>
+                {user?.imageUrl ? (
+                  <img className="user-avatar-img" src={user.imageUrl} alt={user?.username} />
+                ) : (
+                  <span className="user-avatar">{user?.username?.[0]?.toUpperCase()}</span>
+                )}
                 <span className="user-name">{user?.username}</span>
                 {isAdmin() && <span className="badge badge-orange" style={{fontSize:'0.65rem'}}>ADMIN</span>}
               </div>

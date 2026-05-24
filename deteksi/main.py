@@ -158,9 +158,13 @@ while True:
         # =====================================
         # VALIDASI
         # =====================================
-        SIMILARITY_THRESHOLD = 0.65
-        status = "PALSU"
-        if best_similarity >= SIMILARITY_THRESHOLD and len(text_test) > 0:
+        # Menaikkan threshold agar lebih ketat/peka terhadap perbedaan gambar
+        SIMILARITY_THRESHOLD = 0.78
+        # Memperbaiki bug: default seharusnya palsu/tidak dikenali
+        status = "INDIKASI UANG PALSU"
+        
+        # Syarat: kemiripan tinggi dan OCR mendeteksi setidaknya beberapa karakter (lebih dari 2)
+        if best_similarity >= SIMILARITY_THRESHOLD and len(text_test) > 2:
             status = f"INDIKASI ASLI ({best_label})"
 
         # =====================================
@@ -244,9 +248,8 @@ while True:
 
         print("PDF berhasil dibuat!")
 
-    # =====================================
-    # TEKAN Q UNTUK KELUAR
-    # =====================================
+# TEKAN Q UNTUK KELUAR
+    
     elif key == ord('q'):
         break
 

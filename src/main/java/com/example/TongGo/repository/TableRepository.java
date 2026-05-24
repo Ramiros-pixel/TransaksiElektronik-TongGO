@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface TableRepository extends JpaRepository<TableModel, Long> {
     Optional<TableModel> findByTableNumber(Integer tableNumber);
+    Optional<TableModel> findByQrIdentify(String qrIdentify);
 }

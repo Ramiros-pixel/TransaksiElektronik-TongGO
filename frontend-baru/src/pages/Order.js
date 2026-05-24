@@ -22,47 +22,29 @@ const showToast = (message) => {
 
 export const renderOrder = () => {
   const div = document.createElement('div');
-  div.className = 'menu-section';
   
-  div.innerHTML = `
-    <h3 class="section-subtitle">Fresh and healthy dishes</h3>
-    <h2 class="section-title">Our Mouth Watering Menus</h2>
-    <div class="menu-grid" id="menu-grid">
-      <!-- Menus injected here -->
-    </div>
-  `;
+  const title = document.createElement('h2');
+  title.textContent = 'Menu Kami';
+  title.style.marginBottom = '2rem';
+  title.style.color = 'var(--primary-color)';
+  div.appendChild(title);
 
-  // Render menu items
-  const renderItems = () => {
-    const grid = div.querySelector('#menu-grid');
-    grid.innerHTML = '';
-    
-    if (store.menuItems.length === 0) {
-      grid.innerHTML = '<p style="text-align:center; grid-column:1/-1;">Memuat menu dari database...</p>';
-      return;
-    }
+  const grid = document.createElement('div');
+  grid.className = 'menu-grid';
 
-    store.menuItems.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'menu-item';
-      card.innerHTML = `
-        <img src="${item.img}" alt="${item.name}" class="menu-item-img">
-        <div class="menu-item-content">
-          <div class="menu-item-header">
-            <h3 class="menu-item-title">${item.name}</h3>
-          </div>
-          <p class="menu-item-desc">${item.description}</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-             <button class="btn-outline menu-item-btn add-btn" data-id="${item.id}">Order Now</button>
-             <span class="menu-item-price">${formatRupiah(item.price)}</span>
-          </div>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-  };
-
-  renderItems();
+  store.menuItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'menu-card';
+    card.innerHTML = `
+      <div class="menu-img">${item.img}</div>
+      <div class="menu-info">
+        <h3 class="menu-name">${item.name}</h3>
+        <p class="menu-price">${formatRupiah(item.price)}</p>
+        <button class="add-btn" data-id="${item.id}">Tambah Pesanan</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
 
   // Re-render items if store finishes fetching async
   store.subscribe(renderItems);
@@ -72,11 +54,9 @@ export const renderOrder = () => {
     if (e.target.classList.contains('add-btn')) {
       const id = parseInt(e.target.getAttribute('data-id'));
       const item = store.menuItems.find(i => i.id === id);
-      if(item) {
-        store.addToCart(item);
-        showToast(`${item.name} ditambahkan!`);
-        renderFloatingBar();
-      }
+      store.addToCart(item);
+      showToast(`${item.name} ditambahkan!`);
+      renderFloatingBar();
     }
   });
 

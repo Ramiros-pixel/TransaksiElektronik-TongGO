@@ -31,7 +31,7 @@ export const renderDetail = () => {
           <strong style="font-size:1.1rem;">${formatRupiah(itemTotal)}</strong>
           <div class="qty-controls">
              <button class="qty-btn dec-btn" data-id="${item.id}">-</button>
-             <span style="font-weight:bold;">${item.qty}</span>
+             <span>${item.qty}</span>
              <button class="qty-btn inc-btn" data-id="${item.id}">+</button>
           </div>
         </div>

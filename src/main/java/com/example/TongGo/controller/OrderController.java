@@ -20,9 +20,13 @@ public class OrderController {
      * POST /api/orders/init?userId=1&tableId=1
      */
     @PostMapping("/init")
-    public ResponseEntity<?> initOrder(@RequestParam Long userId, @RequestParam Long tableId) {
+    public ResponseEntity<?> initOrder(
+            @RequestParam(required = false) Long userId,
+            @RequestParam Long tableId) {
         try {
-            orderModel order = orderService.createOrder(userId, tableId);
+            orderModel order = (userId != null)
+                    ? orderService.createOrder(userId, tableId)
+                    : orderService.createGuestOrder(tableId);
             return ResponseEntity.ok(order);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -83,6 +87,22 @@ public class OrderController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PutMapping("/{id}/delivery")
+    public ResponseEntity<?> updateDeliveryStatus(@PathVariable Long id, @RequestParam Boolean delivered) {
+        try {
+            orderModel updated = orderService.updateDeliveryStatus(id, delivered);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-queue")
+    public ResponseEntity<?> resetQueue() {
+        OrderService.resetQueue();
+        return ResponseEntity.ok("Antrian berhasil direset ke 0");
     }
 
     @Autowired

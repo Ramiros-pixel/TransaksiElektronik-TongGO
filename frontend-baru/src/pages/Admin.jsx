@@ -31,10 +31,11 @@ function Admin({ formatRupiah }) {
           const data = await response.json();
           setOrders(data.map(o => ({
             id: o.idOrder,
-            queueNumber: o.orderNumber || `A-${o.idOrder}`,
+            queueNumber: o.queueNumber || o.orderNumber || `A-${o.idOrder}`,
             tableNumber: o.tableId ? o.tableId.tableNumber : '-',
             totalPrice: o.totalPrice,
-            status: o.status === 'success' || o.status === 'PAID' ? 'PAID' : 'UNPAID',
+            status: o.status === 'paid' || o.status === 'PAID' ? 'PAID' : 'UNPAID',
+            isDelivered: o.isDelivered,
             timestamp: o.createdAt || new Date().toLocaleString(),
             itemsSummary: 'Lihat detail backend...' 
           })));
@@ -58,6 +59,50 @@ function Admin({ formatRupiah }) {
     navigate('/');
   };
 
+  const handleMarkPaid = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:9090/api/orders/${id}/status?status=paid`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('tonggo_jwt')}`
+        }
+      });
+      if (!response.ok) alert('Gagal mengubah status pesanan');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkDelivered = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:9090/api/orders/${id}/delivery?delivered=true`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('tonggo_jwt')}`
+        }
+      });
+      if (!response.ok) alert('Gagal mengubah status antar');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleResetQueue = async () => {
+    if (!window.confirm('Yakin ingin mereset antrian ke angka 1? (Biasanya dilakukan di pagi hari)')) return;
+    try {
+      const response = await fetch(`http://localhost:9090/api/orders/reset-queue`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('tonggo_jwt')}`
+        }
+      });
+      if (response.ok) alert('Antrian berhasil direset!');
+      else alert('Gagal mereset antrian');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="page-container" style={{maxWidth:'1000px'}}>
       <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '2rem', borderBottom: '1px solid #eee', paddingBottom: '1rem'}}>
@@ -65,8 +110,10 @@ function Admin({ formatRupiah }) {
           <h3 className="section-subtitle" style={{textAlign:'left', fontSize:'1.5rem'}}>Admin Access</h3>
           <h2 style={{fontSize:'2rem', margin:0}}>Dashboard Kasir (Live)</h2>
         </div>
-        <div style={{display:'flex', gap:'1rem'}}>
+        <div style={{display:'flex', gap:'1rem', alignItems:'center'}}>
+          <button className="btn-primary rounded" onClick={handleResetQueue} style={{padding: '0.5rem 1.5rem', background:'#d32f2f', color:'#fff'}}>Reset Antrian</button>
           <button className="btn-primary rounded" onClick={() => navigate('/admin-menu')} style={{padding: '0.5rem 1.5rem'}}>Manajemen Menu</button>
+          <button className="btn-primary rounded" onClick={() => navigate('/admin-tables')} style={{padding: '0.5rem 1.5rem'}}>Manajemen Meja</button>
           <button className="btn-outline" onClick={handleLogout} style={{padding: '0.5rem 1.5rem'}}>Logout</button>
         </div>
       </div>
@@ -105,18 +152,31 @@ function Admin({ formatRupiah }) {
                     </td>
                     <td style={{fontWeight:'bold', fontSize:'1.1rem'}}>{formatRupiah(order.totalPrice)}</td>
                     <td>
-                      <span className={isPaid ? 'badge paid' : 'badge unpaid'}>
-                        {isPaid ? 'LUNAS' : 'BELUM BAYAR'}
-                      </span>
+                      <div style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
+                        <span className={isPaid ? 'badge paid' : 'badge unpaid'} style={{textAlign:'center'}}>
+                          {isPaid ? 'LUNAS' : 'BELUM BAYAR'}
+                        </span>
+                        <span className={order.isDelivered ? 'badge paid' : 'badge unpaid'} style={{textAlign:'center'}}>
+                          {order.isDelivered ? 'DIANTAR' : 'BELUM DIANTAR'}
+                        </span>
+                      </div>
                     </td>
                     <td>
-                      {isPaid ? (
-                        <span style={{color:'var(--text-light)', fontWeight:600}}>Selesai</span>
-                      ) : (
-                        <button className="btn-primary" style={{padding:'0.4rem 1rem', fontSize:'0.85rem'}}>
-                          Tandai Lunas
-                        </button>
-                      )}
+                      <div style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
+                        {!isPaid && (
+                          <button className="btn-primary" onClick={() => handleMarkPaid(order.id)} style={{padding:'0.4rem 1rem', fontSize:'0.85rem'}}>
+                            Tandai Lunas
+                          </button>
+                        )}
+                        {!order.isDelivered && (
+                          <button className="btn-outline" onClick={() => handleMarkDelivered(order.id)} style={{padding:'0.4rem 1rem', fontSize:'0.85rem'}}>
+                            Tandai Diantar
+                          </button>
+                        )}
+                        {isPaid && order.isDelivered && (
+                          <span style={{color:'var(--text-light)', fontWeight:600}}>Selesai</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

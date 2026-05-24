@@ -29,7 +29,20 @@
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
   transition: transform 0.3s ease;
 }
+
+.product-photo {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.18);
+  z-index: 1;
+  box-shadow: var(--shadow-glow);
+
+
 .product-card:hover .product-emoji { transform: scale(1.15); }
+.product-card:hover .product-photo { transform: scale(1.04); }
+
 .product-glow {
   position: absolute;
   width: 80px; height: 80px;

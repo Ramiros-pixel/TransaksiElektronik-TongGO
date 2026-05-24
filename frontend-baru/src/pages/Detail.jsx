@@ -14,15 +14,15 @@ function Detail({ cart, updateQty, clearCart, tableNumber, formatRupiah, setLast
 
     try {
       // 1. Create Order
-      const initResp = await fetch(`http://localhost:9090/api/orders/init?userId=1&tableId=${tId}`, {
+      const initResp = await fetch(`http://localhost:9090/api/orders/init?tableId=${tId}`, {
         method: 'POST'
       });
       
-      if (!initResp.ok) throw new Error('Gagal membuat pesanan (Pastikan userId=1 dan tableId=1 ada di database backend)');
+      if (!initResp.ok) throw new Error('Meja tidak valid atau belum terdaftar di database Admin. Silakan hubungi Kasir.');
       
       const orderData = await initResp.json();
       const orderId = orderData.idOrder;
-      const orderNum = orderData.orderNumber || `A-${orderId}`;
+      const orderNum = orderData.queueNumber || orderData.orderNumber || `A-${orderId}`;
       
       // 2. Add Items
       for (const item of cart) {

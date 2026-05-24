@@ -17,6 +17,13 @@ public class TableController {
     @Autowired
     private TableRepository tableRepository;
 
+    @GetMapping("/qr/{qrCode}")
+    public ResponseEntity<?> getTableByQr(@PathVariable String qrCode) {
+        return tableRepository.findByQrIdentify(qrCode)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping
     public List<TableModel> getAllTables() {
         return tableRepository.findAll();

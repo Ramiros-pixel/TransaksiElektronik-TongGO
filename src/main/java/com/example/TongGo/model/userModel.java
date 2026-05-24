@@ -29,7 +29,10 @@ private String email;
 private String password;
 
 @Enumerated(EnumType.STRING)
-@Column(name = "role", nullable = false)
-private Role role;
+    @Column(name = "role", nullable = false)
+    private Role role;
+
+    @Column(name = "image_url", nullable = true)
+    private String imageUrl;
 
 }

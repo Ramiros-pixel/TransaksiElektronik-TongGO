@@ -1,92 +1,61 @@
+// State Management
 export const store = {
   cart: [],
   tableNumber: null,
+  tableId: null,
   orders: [],
   isAdminLoggedIn: false,
-  jwtToken: null,
-  menuItems: [],
-
-  // Configuration for API
-  API_URL: 'http://localhost:9090/api',
-
-  async init() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const meja = urlParams.get('meja');
-    if (meja) {
-      this.tableNumber = meja;
-    } else {
-      this.tableNumber = 'Pesan Mandiri';
-    }
-
-    const savedToken = localStorage.getItem('tonggo_jwt');
-    if (savedToken) {
-      this.jwtToken = savedToken;
-      this.isAdminLoggedIn = true;
-    }
-
-    await this.fetchProducts();
-  },
-
-  async fetchProducts() {
-    try {
-      const response = await fetch(`${this.API_URL}/products/display`);
-      if (response.ok) {
-        const data = await response.json();
-        this.menuItems = data.map(item => ({
-          id: item.idProduct,
-          name: item.name,
-          price: item.price,
-          description: item.description || 'Hidangan lezat dari bahan pilihan terbaik.',
-          img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
-        }));
-      } else {
-        throw new Error('Gagal memuat dari backend');
-      }
-    } catch (error) {
-      console.error('Backend tidak tersedia, menggunakan data dummy:', error);
-      this.menuItems = [
-        { id: 1, name: 'Fresh Salad Bowl', price: 45000, description: 'Salad segar dengan potongan ayam dan saus spesial.', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' },
-        { id: 2, name: 'Muffins', price: 20000, description: 'Muffin coklat lembut panggang sempurna.', img: 'https://images.unsplash.com/photo-1603532648955-039310d9ed75?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' }
-      ];
-    }
-    this.notifyListeners();
-  },
-
-  // Auth Functions
-  async loginAdmin(email, password) {
-    try {
-      const response = await fetch(`${this.API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      if (!response.ok) throw new Error('Email atau password salah');
-      
-      const data = await response.json();
-      this.jwtToken = data.jwt;
-      this.isAdminLoggedIn = true;
-      localStorage.setItem('tonggo_jwt', data.jwt);
-      return { success: true };
-    } catch (error) {
-      return { success: false, message: error.message };
-    }
-  },
   
-  async registerAdmin(username, email, password) {
-    try {
-      const response = await fetch(`${this.API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password })
-      });
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(errText);
+  // Dummy Menu Data
+  menuItems: [
+    { id: 1, name: 'Nasi Goreng Spesial', price: 25000, img: 'Menu 1' },
+    { id: 2, name: 'Mie Tek-Tek', price: 20000, img: 'Menu 2' },
+    { id: 3, name: 'Ayam Penyet Saung', price: 30000, img: 'Menu 3' },
+    { id: 4, name: 'Es Teh Manis', price: 5000, img: 'Menu 4' },
+    { id: 5, name: 'Kopi Hitam', price: 10000, img: 'Menu 5' },
+    { id: 6, name: 'Jus Mangga', price: 15000, img: 'Menu 6' }
+  ],
+
+  init() {
+    // 1. Read table number from QR code (URL param ?meja=5)
+    const urlParams = new URLSearchParams(window.location.search);
+    const qrCode = urlParams.get('table');
+    if (qrCode) {
+      try {
+        const res = await fetch(`${API_BASE}/api/tables/qr/${qrCode}`);
+        if (res.ok) {
+          const table = await res.json();
+          this.tableId = table.idTable;
+          this.tableNumber = table.tableNumber;
+          localStorage.setItem('tonggo_table_id', table.idTable);
+          localStorage.setItem('tonggo_table_number', table.tableNumber);
+        }
+      } catch (e) {
+        console.error('Gagal resolve QR meja', e);
       }
-      return { success: true };
-    } catch (error) {
-      return { success: false, message: error.message };
+    } else {
+      this.tableNumber = 'Pesan Mandiri (Tanpa QR)';
     }
+
+    // 2. Load orders and auth state from localStorage
+    const savedOrders = localStorage.getItem('tonggo_orders');
+    if (savedOrders) {
+      this.orders = JSON.parse(savedOrders);
+    }
+    
+    const adminAuth = localStorage.getItem('tonggo_admin_auth');
+    if (adminAuth === 'true') {
+      this.isAdminLoggedIn = true;
+    }
+  },
+
+  loginAdmin(pin) {
+    if (pin === '1234') { // Simple dummy PIN
+      this.isAdminLoggedIn = true;
+      localStorage.setItem('tonggo_admin_auth', 'true');
+      return true;
+    }
+    return false;
   },
 
   logoutAdmin() {
@@ -199,7 +168,7 @@ export const store = {
 
   // Customer Functions
   addToCart(item) {
-    const existing = this.cart.find(i => i.id === item.id);
+    const existing = this.cart.find(i => i.idProduct === item.idProduct);
     if (existing) {
       existing.qty += 1;
     } else {
@@ -208,13 +177,11 @@ export const store = {
     this.notifyListeners();
   },
 
-  updateQty(id, delta) {
-    const item = this.cart.find(i => i.id === id);
+  updateQty(idProduct, delta) {
+    const item = this.cart.find(i => i.idProduct === idProduct);
     if (item) {
       item.qty += delta;
-      if (item.qty <= 0) {
-        this.cart = this.cart.filter(i => i.id !== id);
-      }
+      if (item.qty <= 0) this.cart = this.cart.filter(i => i.idProduct !== idProduct);
       this.notifyListeners();
     }
   },
