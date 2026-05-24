@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
 import { orderAPI, cartAPI } from '../api/api';
 import { toast } from '../components/Toast';
 import './CartPage.css';
@@ -23,12 +22,8 @@ export default function CartPage() {
     if (!tableId || isNaN(tableId)) { toast.error('Nomor meja tidak valid'); return; }
     setLoading(true);
     try {
-      // 1. Create order first
-      if (!user?.id) {
-        toast.error('Sesi login tidak valid atau kadaluarsa. Silakan Logout dan Login kembali.');
-        return;
-      }
-      const orderRes = await orderAPI.create(user.id, parseInt(tableId));
+      // 1. Create order first (guest allowed)
+      const orderRes = await orderAPI.createGuest(parseInt(tableId));
       const order = orderRes.data;
 
       // 2. Add items to the created order
