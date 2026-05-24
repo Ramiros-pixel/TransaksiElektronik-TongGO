@@ -30,9 +30,9 @@ export const renderDetail = () => {
         <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem;">
           <strong style="font-size:1.1rem;">${formatRupiah(itemTotal)}</strong>
           <div class="qty-controls">
-             <button class="qty-btn dec-btn" data-id="${item.id}">-</button>
+             <button class="qty-btn dec-btn" data-id="${item.idProduct}">-</button>
              <span>${item.qty}</span>
-             <button class="qty-btn inc-btn" data-id="${item.id}">+</button>
+             <button class="qty-btn inc-btn" data-id="${item.idProduct}">+</button>
           </div>
         </div>
       </div>

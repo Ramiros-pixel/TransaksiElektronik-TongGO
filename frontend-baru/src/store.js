@@ -1,23 +1,20 @@
 // State Management
+const API_BASE = 'http://localhost:8080';
+
+export const api = {
+  get: (url) => fetch(API_BASE + url).then(r => r.json()),
+};
+
 export const store = {
   cart: [],
   tableNumber: null,
   tableId: null,
   orders: [],
   isAdminLoggedIn: false,
-  
-  // Dummy Menu Data
-  menuItems: [
-    { id: 1, name: 'Nasi Goreng Spesial', price: 25000, img: 'Menu 1' },
-    { id: 2, name: 'Mie Tek-Tek', price: 20000, img: 'Menu 2' },
-    { id: 3, name: 'Ayam Penyet Saung', price: 30000, img: 'Menu 3' },
-    { id: 4, name: 'Es Teh Manis', price: 5000, img: 'Menu 4' },
-    { id: 5, name: 'Kopi Hitam', price: 10000, img: 'Menu 5' },
-    { id: 6, name: 'Jus Mangga', price: 15000, img: 'Menu 6' }
-  ],
+  menuItems: [],
 
-  init() {
-    // 1. Read table number from QR code (URL param ?meja=5)
+  async init() {
+    // 1. Baca QR dari URL ?table=QR-XXXX
     const urlParams = new URLSearchParams(window.location.search);
     const qrCode = urlParams.get('table');
     if (qrCode) {
@@ -34,19 +31,24 @@ export const store = {
         console.error('Gagal resolve QR meja', e);
       }
     } else {
-      this.tableNumber = 'Pesan Mandiri (Tanpa QR)';
+      // Ambil dari localStorage kalau sudah pernah scan
+      const savedId = localStorage.getItem('tonggo_table_id');
+      const savedNum = localStorage.getItem('tonggo_table_number');
+      if (savedId) { this.tableId = savedId; this.tableNumber = savedNum; }
     }
 
-    // 2. Load orders and auth state from localStorage
+    // 2. Load menu dari backend
+    try {
+      this.menuItems = await api.get('/api/products/display');
+    } catch {
+      this.menuItems = [];
+    }
+
+    // 3. Load orders & auth dari localStorage
     const savedOrders = localStorage.getItem('tonggo_orders');
-    if (savedOrders) {
-      this.orders = JSON.parse(savedOrders);
-    }
-    
+    if (savedOrders) this.orders = JSON.parse(savedOrders);
     const adminAuth = localStorage.getItem('tonggo_admin_auth');
-    if (adminAuth === 'true') {
-      this.isAdminLoggedIn = true;
-    }
+    if (adminAuth === 'true') this.isAdminLoggedIn = true;
   },
 
   loginAdmin(pin) {
