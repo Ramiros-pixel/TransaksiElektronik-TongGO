@@ -16,9 +16,16 @@ export const renderOrder = () => {
   
   const title = document.createElement('h2');
   title.textContent = 'Menu Kami';
-  title.style.marginBottom = '2rem';
+  title.style.marginBottom = '0.5rem';
   title.style.color = 'var(--primary-color)';
   div.appendChild(title);
+
+  if (store.tableNumber) {
+    const tableInfo = document.createElement('p');
+    tableInfo.style.cssText = 'margin-bottom:1.5rem; font-weight:600; color:green;';
+    tableInfo.textContent = `🪑 Meja ${store.tableNumber} terdeteksi`;
+    div.appendChild(tableInfo);
+  }
 
   const grid = document.createElement('div');
   grid.className = 'menu-grid';
@@ -27,11 +34,11 @@ export const renderOrder = () => {
     const card = document.createElement('div');
     card.className = 'menu-card';
     card.innerHTML = `
-      <div class="menu-img">${item.img}</div>
+      <div class="menu-img">🍽️</div>
       <div class="menu-info">
         <h3 class="menu-name">${item.name}</h3>
         <p class="menu-price">${formatRupiah(item.price)}</p>
-        <button class="add-btn" data-id="${item.id}">Tambah Pesanan</button>
+        <button class="add-btn" data-id="${item.idProduct}">Tambah Pesanan</button>
       </div>
     `;
     grid.appendChild(card);
@@ -43,7 +50,7 @@ export const renderOrder = () => {
   grid.addEventListener('click', (e) => {
     if (e.target.classList.contains('add-btn')) {
       const id = parseInt(e.target.getAttribute('data-id'));
-      const item = store.menuItems.find(i => i.id === id);
+      const item = store.menuItems.find(i => i.idProduct === id);
       store.addToCart(item);
       showToast(`${item.name} ditambahkan!`);
       renderFloatingBar();
