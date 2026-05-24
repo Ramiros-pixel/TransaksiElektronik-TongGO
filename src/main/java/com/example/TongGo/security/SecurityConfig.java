@@ -55,7 +55,19 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/api/auth/**", "/api/payment/callback", "/payment/callback", "/api/detection/**", "/api/orders/*/receipt").permitAll()
+                .requestMatchers(
+                    "/api/auth/**",
+                    "/api/payment/**",
+                    "/payment/callback",
+                    "/api/detection/**",
+                    "/api/orders/*/receipt",
+                    "/api/orders/init",
+                    "/api/orders/*",
+                    "/api/orders/*/items",
+                    "/api/keranjang/**",
+                    "/api/tables/**",
+                    "/api/products/display"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

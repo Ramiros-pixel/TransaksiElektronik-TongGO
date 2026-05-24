@@ -31,15 +31,9 @@ function AppRoutes() {
         <Route path="/login"    element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        <Route path="/menu" element={
-          <ProtectedRoute><MenuPage /></ProtectedRoute>
-        } />
-        <Route path="/cart" element={
-          <ProtectedRoute><CartPage /></ProtectedRoute>
-        } />
-        <Route path="/orders" element={
-          <ProtectedRoute><OrdersPage /></ProtectedRoute>
-        } />
+        <Route path="/menu" element={<MenuPage />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
         <Route path="/payment/:orderId" element={
           <ProtectedRoute><PaymentPage /></ProtectedRoute>
         } />

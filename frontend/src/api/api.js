@@ -58,6 +58,7 @@ export const tableAPI = {
 
 export const orderAPI = {
   create: (userId, tableId) => api.post(`/api/orders/init?userId=${userId}&tableId=${tableId}`),
+  createGuest: (tableId) => api.post(`/api/orders/init?tableId=${tableId}`),
   getAll: () => api.get('/api/orders/list'),
   getById: (id) => api.get(`/api/orders/${id}`),
   getByUser: (userId) => api.get(`/api/orders/user/${userId}`),
