@@ -24,9 +24,9 @@ export const renderDetail = () => {
           <div class="item-name">${item.name}</div>
           <div class="item-qty-price">${item.qty} x ${formatRupiah(item.price)}</div>
           <div class="qty-controls">
-             <button class="qty-btn dec-btn" data-id="${item.id}">-</button>
+             <button class="qty-btn dec-btn" data-id="${item.idProduct}">-</button>
              <span>${item.qty}</span>
-             <button class="qty-btn inc-btn" data-id="${item.id}">+</button>
+             <button class="qty-btn inc-btn" data-id="${item.idProduct}">+</button>
           </div>
         </div>
         <div class="item-total">${formatRupiah(itemTotal)}</div>

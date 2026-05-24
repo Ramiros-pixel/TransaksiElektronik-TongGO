@@ -54,7 +54,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/api/auth/**", "/api/payment/callback", "/payment/callback", "/api/detection/**", "/api/orders/*/receipt").permitAll()
+                .requestMatchers("/api/auth/**", "/api/payment/callback", "/payment/callback", "/api/detection/**", "/api/orders/*/receipt", "/api/tables/qr/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { productAPI, orderAPI, tableAPI, detectionAPI } from '../../api/api';
 import ProductCard from '../../components/ProductCard';
 import Modal from '../../components/Modal';
@@ -26,6 +27,9 @@ export default function AdminDashboard() {
   const [editTableTarget, setEditTableTarget] = useState(null);
   const emptyTableForm = { tableNumber: '', qrIdentify: '', isActive: true };
   const [tableForm, setTableForm] = useState(emptyTableForm);
+
+  const [qrModal, setQrModal] = useState(false);
+  const [qrTable, setQrTable] = useState(null);
 
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('products');
@@ -297,6 +301,7 @@ export default function AdminDashboard() {
                             : <span className="badge badge-warning">Tutup</span>}
                         </td>
                         <td>
+                          <button className="btn btn-primary btn-sm" onClick={() => { setQrTable(t); setQrModal(true); }} style={{marginRight: '8px', background: 'transparent', border: '1px solid var(--accent-secondary)', color: 'var(--accent-secondary)'}}>📱 QR</button>
                           <button className="btn btn-primary btn-sm" onClick={() => openEditTable(t)} style={{marginRight: '8px', background: 'transparent', border: '1px solid var(--accent-primary)'}}>✏️ Edit</button>
                           <button className="btn btn-danger btn-sm" onClick={() => handleDeleteTable(t.idTable)}>🗑️</button>
                         </td>
@@ -598,6 +603,26 @@ export default function AdminDashboard() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* QR Code Modal */}
+      <Modal isOpen={qrModal} onClose={() => setQrModal(false)} title={`QR Code - Meja ${qrTable?.tableNumber}`}>
+        {qrTable && (() => {
+          const qrUrl = `${window.location.origin}/menu?table=${qrTable.qrIdentify}`;
+          return (
+            <div style={{textAlign: 'center', padding: '16px 0'}}>
+              <div style={{display: 'inline-block', background: '#fff', padding: 20, borderRadius: 12}}>
+                <QRCodeSVG value={qrUrl} size={220} />
+              </div>
+              <p style={{marginTop: 16, fontWeight: 600, fontSize: '1.1rem'}}>Meja {qrTable.tableNumber}</p>
+              <p style={{color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 4, wordBreak: 'break-all'}}>{qrUrl}</p>
+              <p style={{color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: 8}}>Scan QR ini untuk langsung ke menu dengan meja terdeteksi otomatis</p>
+            </div>
+          );
+        })()}
+        <div className="modal-footer">
+          <button className="btn btn-primary btn-full" onClick={() => setQrModal(false)}>Tutup</button>
+        </div>
       </Modal>
 
       {/* Order Items Detail Modal */}
