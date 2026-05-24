@@ -75,6 +75,16 @@ public class OrderController {
         }
     }
 
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestParam String status) {
+        try {
+            orderModel updated = orderService.updateOrderStatus(id, status);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @Autowired
     private com.example.TongGo.service.ReceiptService receiptService;
 

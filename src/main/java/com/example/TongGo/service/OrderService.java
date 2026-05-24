@@ -84,4 +84,18 @@ public class OrderService {
     public void deleteOrder(Long id) {
         orderRepository.deleteById(id);
     }
+
+    @Transactional
+    public orderModel updateOrderStatus(Long orderId, String statusString) {
+        orderModel order = getOrderById(orderId);
+        Paid status;
+        try {
+            status = Paid.valueOf(statusString.toLowerCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Status tidak valid: " + statusString + ". Gunakan pending atau paid.");
+        }
+        order.setStatus(status);
+        order.setUpdatedAt(LocalDateTime.now());
+        return orderRepository.save(order);
+    }
 }
