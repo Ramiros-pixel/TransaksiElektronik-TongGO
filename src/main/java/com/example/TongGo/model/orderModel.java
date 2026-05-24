@@ -62,4 +62,10 @@ public class orderModel {
 
     @Column(name = "updated_at", nullable = true)
     private LocalDateTime updatedAt;
+
+    @Column(name = "queue_number", nullable = true)
+    private Integer queueNumber;
+
+    @Column(name = "is_delivered", nullable = false)
+    private Boolean isDelivered = false;
 }

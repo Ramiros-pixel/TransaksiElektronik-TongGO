@@ -4,6 +4,15 @@ const showToast = (message) => {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   toast.className = 'toast';
+  toast.style.background = 'var(--primary-color)';
+  toast.style.color = '#000';
+  toast.style.padding = '1rem 2rem';
+  toast.style.borderRadius = '30px';
+  toast.style.fontWeight = 'bold';
+  toast.style.position = 'fixed';
+  toast.style.bottom = '20px';
+  toast.style.right = '20px';
+  toast.style.zIndex = '9999';
   toast.textContent = message;
   container.appendChild(toast);
   setTimeout(() => {
@@ -44,10 +53,11 @@ export const renderOrder = () => {
     grid.appendChild(card);
   });
 
-  div.appendChild(grid);
+  // Re-render items if store finishes fetching async
+  store.subscribe(renderItems);
 
   // Event delegation for Add buttons
-  grid.addEventListener('click', (e) => {
+  div.addEventListener('click', (e) => {
     if (e.target.classList.contains('add-btn')) {
       const id = parseInt(e.target.getAttribute('data-id'));
       const item = store.menuItems.find(i => i.idProduct === id);
@@ -57,8 +67,7 @@ export const renderOrder = () => {
     }
   });
 
-  // Initial render of floating bar if cart has items
-  setTimeout(renderFloatingBar, 0);
+  setTimeout(renderFloatingBar, 100);
 
   return div;
 };
@@ -75,15 +84,15 @@ export const renderFloatingBar = () => {
   if (!floatingBar) {
     floatingBar = document.createElement('div');
     floatingBar.id = 'global-floating-bar';
-    floatingBar.className = 'floating-bar';
+    floatingBar.className = 'floating-cart';
     document.body.appendChild(floatingBar);
   }
 
   floatingBar.innerHTML = `
-    <div class="floating-info">
-      <span class="floating-label">${totalItems} Item(s) ditambahkan</span>
-      <span class="floating-total">${formatRupiah(store.getTotalPrice())}</span>
+    <div>
+      <p style="color:var(--text-light); margin:0;">${totalItems} Item(s)</p>
+      <div class="cart-total">${formatRupiah(store.getTotalPrice())}</div>
     </div>
-    <a href="#/detail" class="btn-primary" style="padding: 0.5rem 1.5rem;">Lihat Detail</a>
+    <a href="#/detail" class="btn-primary rounded">Lihat Keranjang</a>
   `;
 };

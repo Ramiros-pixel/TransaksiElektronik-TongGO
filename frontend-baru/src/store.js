@@ -59,12 +59,116 @@ export const store = {
     }
     return false;
   },
-  
+
   logoutAdmin() {
     this.isAdminLoggedIn = false;
-    localStorage.removeItem('tonggo_admin_auth');
+    this.jwtToken = null;
+    localStorage.removeItem('tonggo_jwt');
   },
 
+  // Admin Dashboard Functions
+  async fetchAdminOrders() {
+    if (!this.jwtToken) return;
+    try {
+      const response = await fetch(`${this.API_URL}/orders/list`, {
+        headers: {
+          'Authorization': `Bearer ${this.jwtToken}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        this.orders = data.map(o => ({
+          id: o.idOrder,
+          queueNumber: o.orderNumber || `A-${o.idOrder}`,
+          tableNumber: o.tableId ? o.tableId.tableNumber : '-',
+          totalPrice: o.totalPrice,
+          status: o.status === 'paid' ? 'PAID' : 'UNPAID',
+          rawStatus: o.status,
+          timestamp: o.createdAt ? new Date(o.createdAt).toLocaleString() : new Date().toLocaleString(),
+          itemsSummary: o.items && o.items.length > 0 ? o.items.map(i => `${i.productId?.name || 'Produk'} x${i.quantity}`).join(', ') : 'Belum ada item yang ditambahkan.'
+        }));
+        this.notifyListeners();
+      }
+    } catch (error) {
+      console.error('Failed to fetch orders', error);
+    }
+  },
+
+  async updateOrderStatus(orderId, status) {
+    if (!this.jwtToken) throw new Error('Admin tidak terautentikasi');
+    const response = await fetch(`${this.API_URL}/orders/${orderId}/status?status=${status}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.jwtToken}`
+      }
+    });
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err || 'Gagal memperbarui status order');
+    }
+    return response.json();
+  },
+
+  async fetchAdminProducts() {
+    try {
+      const response = await fetch(`${this.API_URL}/products/display`);
+      if (!response.ok) throw new Error('Gagal memuat produk');
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to load admin products', error);
+      return [];
+    }
+  },
+
+  async createProduct(product) {
+    if (!this.jwtToken) throw new Error('Admin tidak terautentikasi');
+    const response = await fetch(`${this.API_URL}/products/tambah`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.jwtToken}`
+      },
+      body: JSON.stringify(product)
+    });
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err || 'Gagal menambahkan produk');
+    }
+    return await response.json();
+  },
+
+  async updateProduct(id, product) {
+    if (!this.jwtToken) throw new Error('Admin tidak terautentikasi');
+    const response = await fetch(`${this.API_URL}/products/ubah/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.jwtToken}`
+      },
+      body: JSON.stringify(product)
+    });
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err || 'Gagal memperbarui produk');
+    }
+  },
+
+  async deleteProduct(id) {
+    if (!this.jwtToken) throw new Error('Admin tidak terautentikasi');
+    const response = await fetch(`${this.API_URL}/products/hapus/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${this.jwtToken}`
+      }
+    });
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err || 'Gagal menghapus produk');
+    }
+  },
+
+  // Customer Functions
   addToCart(item) {
     const existing = this.cart.find(i => i.idProduct === item.idProduct);
     if (existing) {
@@ -92,44 +196,66 @@ export const store = {
     return this.cart.reduce((total, item) => total + item.qty, 0);
   },
 
-  // Checkout process: generate queue, save order, clear cart
-  checkout() {
+  async checkoutAPI() {
     if (this.cart.length === 0) return null;
     
-    // Generate Queue Number (e.g. A-001)
-    const count = this.orders.length + 1;
-    const queueNumber = `A-${count.toString().padStart(3, '0')}`;
+    // We use dummy userId=1 and tableId=1 for anonymous buyers
+    // If tableNumber from URL is a number, we can use it, else default to 1
+    let tId = parseInt(this.tableNumber);
+    if (isNaN(tId)) tId = 1;
     
-    const newOrder = {
-      id: Date.now().toString(),
-      queueNumber: queueNumber,
-      tableNumber: this.tableNumber,
-      items: [...this.cart],
-      totalPrice: this.getTotalPrice(),
-      status: 'UNPAID', // UNPAID or PAID
-      timestamp: new Date().toLocaleString()
-    };
-    
-    this.orders.unshift(newOrder); // Add to beginning
-    this._saveOrders();
-    
-    this.cart = []; // Empty cart
-    this.notifyListeners();
-    
-    return newOrder;
-  },
-  
-  markOrderAsPaid(orderId) {
-    const order = this.orders.find(o => o.id === orderId);
-    if (order) {
-      order.status = 'PAID';
-      this._saveOrders();
+    try {
+      // 1. Create Order
+      const initResp = await fetch(`${this.API_URL}/orders/init?userId=1&tableId=${tId}`, {
+        method: 'POST'
+      });
+      
+      if (!initResp.ok) {
+        throw new Error('Gagal membuat pesanan (Pastikan userId=1 dan tableId=1 ada di database backend Anda)');
+      }
+      
+      const orderData = await initResp.json();
+      const orderId = orderData.idOrder;
+      const orderNum = orderData.orderNumber || `A-${orderId}`;
+      
+      // 2. Add Items to Keranjang
+      for (const item of this.cart) {
+        await fetch(`${this.API_URL}/keranjang/tambah`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: orderId,
+            productId: item.id,
+            quantity: item.qty
+          })
+        });
+      }
+      
+      const orderSummary = {
+        queueNumber: orderNum,
+        tableNumber: this.tableNumber,
+        items: [...this.cart],
+        totalPrice: this.getTotalPrice()
+      };
+      
+      this.cart = [];
       this.notifyListeners();
+      return orderSummary;
+
+    } catch (err) {
+      console.error(err);
+      // Fallback if backend fails, just to let the demo continue smoothly
+      alert("Error menghubungi backend: " + err.message + "\\n\\nMenggunakan Mode Offline Sementara.");
+      
+      const orderSummary = {
+        queueNumber: `A-999 (Offline)`,
+        tableNumber: this.tableNumber,
+        items: [...this.cart],
+        totalPrice: this.getTotalPrice()
+      };
+      this.cart = [];
+      return orderSummary;
     }
-  },
-  
-  _saveOrders() {
-    localStorage.setItem('tonggo_orders', JSON.stringify(this.orders));
   },
 
   listeners: [],

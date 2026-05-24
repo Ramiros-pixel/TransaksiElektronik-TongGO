@@ -3,56 +3,61 @@ import { router } from '../router.js';
 
 export const renderDetail = () => {
   const div = document.createElement('div');
-  div.className = 'detail-container';
+  div.className = 'page-container';
 
   if (store.cart.length === 0) {
     div.innerHTML = `
-      <h2 class="detail-title">Detail Pesanan</h2>
-      <p style="text-align:center; color:#555; margin: 3rem 0; font-size:1.3rem;">Belum ada pesanan.</p>
-      <div style="text-align:center;"><a href="#/pesan" class="btn-primary">Kembali ke Menu</a></div>
+      <div style="text-align:center; padding: 3rem 0;">
+        <h2 class="section-title">Keranjang Kosong</h2>
+        <p style="color:var(--text-light); margin-bottom: 2rem;">Anda belum memilih hidangan apapun.</p>
+        <a href="#/pesan" class="btn-primary rounded">Lihat Menu</a>
+      </div>
     `;
     return div;
   }
 
-  let html = `<h2 class="detail-title">Detail Pesanan</h2>`;
+  let html = `<h2 class="section-subtitle">Your Order</h2><h2 class="section-title" style="margin-bottom:1rem;">Pesanan Anda</h2>`;
   
+  html += `<div class="order-list">`;
   store.cart.forEach(item => {
     const itemTotal = item.price * item.qty;
     html += `
-      <div class="order-item">
+      <div class="order-row">
         <div>
-          <div class="item-name">${item.name}</div>
-          <div class="item-qty-price">${item.qty} x ${formatRupiah(item.price)}</div>
+          <h3 style="font-size:1.1rem; margin-bottom:0.3rem;">${item.name}</h3>
+          <p style="color:var(--text-light); font-size:0.9rem; margin:0;">${item.qty} x ${formatRupiah(item.price)}</p>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem;">
+          <strong style="font-size:1.1rem;">${formatRupiah(itemTotal)}</strong>
           <div class="qty-controls">
              <button class="qty-btn dec-btn" data-id="${item.idProduct}">-</button>
              <span>${item.qty}</span>
              <button class="qty-btn inc-btn" data-id="${item.idProduct}">+</button>
           </div>
         </div>
-        <div class="item-total">${formatRupiah(itemTotal)}</div>
       </div>
     `;
   });
+  html += `</div>`;
 
   html += `
-    <div class="table-info">
-      <p>Nomor Meja Anda:</p>
-      <h3>${store.tableNumber}</h3>
-      <small style="color:#555;">(Berdasarkan scan QR Code / Mandiri)</small>
+    <div style="background:var(--bg-light); padding:1.5rem; border-radius:10px; margin-bottom:2rem;">
+      <p style="color:var(--text-light); margin:0;">Nomor Meja Anda:</p>
+      <h3 style="color:var(--primary-dark); font-size:1.5rem; margin:0;">${store.tableNumber}</h3>
     </div>
     
-    <div class="checkout-section">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-top:2px solid #eee; padding-top:1.5rem;">
       <div>
-        <div style="font-size:1.1rem; color:#555; font-weight:bold;">Total Pembayaran:</div>
-        <div class="grand-total">${formatRupiah(store.getTotalPrice())}</div>
+        <p style="color:var(--text-light); margin:0;">Total Pembayaran</p>
+        <h2 style="font-size:1.8rem; margin:0;">${formatRupiah(store.getTotalPrice())}</h2>
       </div>
-      <button class="btn-primary confirm-btn">Konfirmasi Pesanan</button>
+      <button class="btn-primary rounded confirm-btn" style="padding:1rem 2rem; font-size:1.1rem;">Konfirmasi Pesanan</button>
     </div>
   `;
 
   div.innerHTML = html;
 
-  div.addEventListener('click', (e) => {
+  div.addEventListener('click', async (e) => {
     if (e.target.classList.contains('inc-btn')) {
       const id = parseInt(e.target.getAttribute('data-id'));
       store.updateQty(id, 1);
@@ -64,10 +69,19 @@ export const renderDetail = () => {
       router();
     }
     if (e.target.classList.contains('confirm-btn')) {
-      const order = store.checkout();
-      if (order) {
-        window.lastOrder = order; // temporary variable for the receipt page to read
+      e.target.disabled = true;
+      e.target.textContent = 'Menyambungkan ke Server...';
+      e.target.style.opacity = '0.7';
+      
+      const orderSummary = await store.checkoutAPI();
+      
+      if (orderSummary) {
+        window.lastOrder = orderSummary;
         window.location.hash = '#/receipt';
+      } else {
+        e.target.disabled = false;
+        e.target.textContent = 'Konfirmasi Pesanan';
+        e.target.style.opacity = '1';
       }
     }
   });

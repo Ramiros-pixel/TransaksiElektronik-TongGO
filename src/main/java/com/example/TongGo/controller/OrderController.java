@@ -79,6 +79,32 @@ public class OrderController {
         }
     }
 
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestParam String status) {
+        try {
+            orderModel updated = orderService.updateOrderStatus(id, status);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/delivery")
+    public ResponseEntity<?> updateDeliveryStatus(@PathVariable Long id, @RequestParam Boolean delivered) {
+        try {
+            orderModel updated = orderService.updateDeliveryStatus(id, delivered);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-queue")
+    public ResponseEntity<?> resetQueue() {
+        OrderService.resetQueue();
+        return ResponseEntity.ok("Antrian berhasil direset ke 0");
+    }
+
     @Autowired
     private com.example.TongGo.service.ReceiptService receiptService;
 

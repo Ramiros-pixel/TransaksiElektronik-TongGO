@@ -18,8 +18,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 @Service
 public class OrderService {
+
+    private static AtomicInteger currentQueueNumber = new AtomicInteger(0);
+
+    public static void resetQueue() {
+        currentQueueNumber.set(0);
+    }
 
     @Autowired
     private OrderRepository orderRepository;
@@ -54,6 +62,39 @@ public class OrderService {
         order.setTotalPrice(0.0);
         order.setStatus(Paid.pending);
         order.setOrderNumber(orderNumberGenerator.generateOrderNumber());
+        order.setQueueNumber(currentQueueNumber.incrementAndGet());
+        order.setIsDelivered(false);
+        order.setCreatedAt(LocalDateTime.now());
+
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public orderModel createGuestOrder(Long tableId) {
+        TableModel table = tableRepository.findByTableNumber(tableId.intValue())
+                .orElseThrow(() -> new RuntimeException("Meja nomor " + tableId + " tidak ditemukan"));
+
+        // Create/find guest user.
+        // Use a deterministic email so it can be re-used.
+        String guestEmail = "guest-table-" + tableId + "@tonggo.local";
+
+        userModel guest = userRepository.findByEmail(guestEmail).orElseGet(() -> {
+            userModel u = new userModel();
+            u.setUsername("Guest Table " + tableId);
+            u.setEmail(guestEmail);
+            u.setPassword("guest");
+            u.setRole(com.example.TongGo.model.Role.USER);
+            return userRepository.save(u);
+        });
+
+        orderModel order = new orderModel();
+        order.setUserId(guest);
+        order.setTableId(table);
+        order.setTotalPrice(0.0);
+        order.setStatus(Paid.pending);
+        order.setOrderNumber(orderNumberGenerator.generateOrderNumber());
+        order.setQueueNumber(currentQueueNumber.incrementAndGet());
+        order.setIsDelivered(false);
         order.setCreatedAt(LocalDateTime.now());
 
         return orderRepository.save(order);
@@ -113,5 +154,27 @@ public class OrderService {
     @Transactional
     public void deleteOrder(Long id) {
         orderRepository.deleteById(id);
+    }
+
+    @Transactional
+    public orderModel updateOrderStatus(Long orderId, String statusString) {
+        orderModel order = getOrderById(orderId);
+        Paid status;
+        try {
+            status = Paid.valueOf(statusString.toLowerCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Status tidak valid: " + statusString + ". Gunakan pending atau paid.");
+        }
+        order.setStatus(status);
+        order.setUpdatedAt(LocalDateTime.now());
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public orderModel updateDeliveryStatus(Long orderId, Boolean delivered) {
+        orderModel order = getOrderById(orderId);
+        order.setIsDelivered(delivered);
+        order.setUpdatedAt(LocalDateTime.now());
+        return orderRepository.save(order);
     }
 }
