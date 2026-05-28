@@ -128,6 +128,7 @@ function App() {
               updateQty={updateQty} 
               clearCart={clearCart}
               tableNumber={tableNumber} 
+              setTableNumber={setTableNumber} 
               formatRupiah={formatRupiah}
               setLastOrder={setLastOrder}
             />
