@@ -17,6 +17,10 @@ function AdminTable() {
     isActive: true
   });
 
+  // QR Modal State
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [selectedTable, setSelectedTable] = useState(null);
+
   const fetchTables = async () => {
     const token = localStorage.getItem('tonggo_jwt');
     try {
@@ -66,6 +70,11 @@ function AdminTable() {
       isActive: t.isActive
     });
     setShowModal(true);
+  };
+
+  const openQrModal = (t) => {
+    setSelectedTable(t);
+    setShowQrModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -178,6 +187,7 @@ function AdminTable() {
                     </span>
                   </td>
                   <td>
+                    <button className="btn-outline" style={{padding:'0.4rem 0.8rem', fontSize:'0.85rem', marginRight:'0.5rem', borderColor:'var(--primary-dark)', color:'var(--primary-dark)', fontWeight:600}} onClick={() => openQrModal(t)}>QR Code</button>
                     <button className="btn-outline" style={{padding:'0.4rem 0.8rem', fontSize:'0.85rem', marginRight:'0.5rem'}} onClick={() => openEditModal(t)}>Edit</button>
                     <button className="btn-primary" style={{padding:'0.4rem 0.8rem', fontSize:'0.85rem', background:'#d32f2f'}} onClick={() => handleDelete(t.idTable)}>Hapus</button>
                   </td>
@@ -219,6 +229,65 @@ function AdminTable() {
               </div>
 
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal QR Code Generator & Printing */}
+      {showQrModal && selectedTable && (
+        <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000}}>
+          <div style={{background:'#fff', padding:'2rem', borderRadius:'15px', width:'100%', maxWidth:'420px', textAlign:'center', boxShadow:'0 10px 25px rgba(0,0,0,0.2)'}}>
+            <h3 style={{marginBottom:'0.5rem', fontSize:'1.6rem'}}>QR Code Meja {selectedTable.tableNumber}</h3>
+            <p style={{color:'var(--text-light)', fontSize:'0.9rem', marginBottom:'1.5rem'}}>Scan QR ini untuk masuk langsung ke pemesanan Meja {selectedTable.tableNumber}</p>
+            
+            <div style={{background:'#f9f9f9', padding:'1.5rem', borderRadius:'10px', display:'inline-block', marginBottom:'1.5rem', border:'1px solid #eee'}}>
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${window.location.origin}/?meja=${selectedTable.tableNumber}`)}`} 
+                
+                style={{width:'220px', height:'220px', display:'block'}}
+              />
+            </div>
+
+            <div style={{display:'flex', gap:'1rem', justifyContent:'center'}}>
+              <button 
+                type="button" 
+                className="btn-outline" 
+                onClick={() => {
+                  const printWindow = window.open('', '_blank');
+                  printWindow.document.write(`
+                    <html>
+                      <head>
+                        <title>Cetak QR Meja ${selectedTable.tableNumber}</title>
+                        <style>
+                          body { font-family: sans-serif; text-align: center; padding: 40px; margin: 0; }
+                          .container { border: 3px double #333; padding: 30px; display: inline-block; border-radius: 15px; background: #fff; }
+                          h1 { margin-bottom: 5px; font-size: 2.2rem; margin-top: 0; letter-spacing: 1px; color: #111; }
+                          p { color: #555; margin-bottom: 20px; font-size: 1.1rem; font-weight: bold; letter-spacing: 2px; }
+                          img { width: 300px; height: 300px; display: block; margin: 0 auto; }
+                          .footer { margin-top: 25px; font-weight: bold; font-size: 1.6rem; color: #1b4d3e; }
+                        </style>
+                      </head>
+                      <body>
+                        <div class="container">
+                          <h1>KANTIN SAUNG MANGGA</h1>
+                          <p>SCAN UNTUK MEMESAN</p>
+                          <img 
+                            src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`${window.location.origin}/?meja=${selectedTable.tableNumber}`)}" 
+                            onload="setTimeout(function() { window.print(); window.close(); }, 500);"
+                          />
+                          <div class="footer">MEJA ${selectedTable.tableNumber}</div>
+                        </div>
+                      </body>
+                    </html>
+                  `);
+                  printWindow.document.close();
+                }} 
+                style={{padding:'0.8rem 1.5rem'}}
+              >
+                🖨️ Cetak QR
+              </button>
+              <button type="button" className="btn-primary rounded" onClick={() => setShowQrModal(false)} style={{padding:'0.8rem 1.5rem'}}>Tutup</button>
+            </div>
           </div>
         </div>
       )}

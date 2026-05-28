@@ -35,4 +35,11 @@ private String password;
     @Column(name = "image_url", nullable = true)
     private String imageUrl;
 
+    @Column(name = "reset_password_token", nullable = true)
+    private String resetPasswordToken;
+
+    @Column(name = "reset_password_token_expiry", nullable = true)
+    private java.time.LocalDateTime resetPasswordTokenExpiry;
+
 }
+
