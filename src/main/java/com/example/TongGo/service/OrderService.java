@@ -100,35 +100,6 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    @Transactional
-    public orderModel createGuestOrder(Long tableId) {
-        TableModel table = tableRepository.findByTableNumber(tableId.intValue())
-                .orElseThrow(() -> new RuntimeException("Meja nomor " + tableId + " tidak ditemukan"));
-
-        // Create/find guest user.
-        // Use a deterministic email so it can be re-used.
-        String guestEmail = "guest-table-" + tableId + "@tonggo.local";
-
-        userModel guest = userRepository.findByEmail(guestEmail).orElseGet(() -> {
-            userModel u = new userModel();
-            u.setUsername("Guest Table " + tableId);
-            u.setEmail(guestEmail);
-            u.setPassword("guest");
-            u.setRole(com.example.TongGo.model.Role.USER);
-            return userRepository.save(u);
-        });
-
-        orderModel order = new orderModel();
-        order.setUserId(guest);
-        order.setTableId(table);
-        order.setTotalPrice(0.0);
-        order.setStatus(Paid.pending);
-        order.setOrderNumber(orderNumberGenerator.generateOrderNumber());
-        order.setCreatedAt(LocalDateTime.now());
-
-        return orderRepository.save(order);
-    }
-
     @Transactional(readOnly = true)
     public List<orderModel> getAllOrders() {
         return orderRepository.findAllByOrderByCreatedAtDesc();

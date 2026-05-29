@@ -144,14 +144,13 @@ function AdminMenu() {
 
   return (
     <div className="page-container" style={{maxWidth:'1000px'}}>
-      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '2rem', borderBottom: '1px solid #eee', paddingBottom: '1rem'}}>
+      <div className="admin-header">
         <div>
           <h3 className="section-subtitle" style={{textAlign:'left', fontSize:'1.5rem'}}>Admin Access</h3>
           <h2 style={{fontSize:'2rem', margin:0}}>Manajemen Menu</h2>
         </div>
-        <div style={{display:'flex', gap:'1rem'}}>
-          <Link to="/admin" className="btn-outline" style={{padding: '0.5rem 1.5rem'}}>Kembali ke Pesanan</Link>
-          <button className="btn-outline" onClick={handleLogout} style={{padding: '0.5rem 1.5rem'}}>Logout</button>
+        <div className="admin-header-actions">
+          <Link to="/admin" className="btn-outline">Kembali ke Pesanan</Link>
         </div>
       </div>
 
@@ -189,15 +188,15 @@ function AdminMenu() {
 
                 return (
                   <tr key={p.idProduct}>
-                    <td>{p.idProduct}</td>
-                    <td style={{fontWeight:600}}>{p.name}</td>
-                    <td style={{fontWeight:'bold'}}>{formatRupiah(p.price)}</td>
-                    <td>
+                    <td data-label="ID">{p.idProduct}</td>
+                    <td data-label="Nama" style={{fontWeight:600}}>{p.name}</td>
+                    <td data-label="Harga" style={{fontWeight:'bold'}}>{formatRupiah(p.price)}</td>
+                    <td data-label="Stok">
                       <span className={stockStatus === 'READY' ? 'badge paid' : 'badge unpaid'}>
                         {stockStatus}
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Aksi">
                       <button className="btn-outline" style={{padding:'0.4rem 0.8rem', fontSize:'0.85rem', marginRight:'0.5rem'}} onClick={() => openEditModal(p)}>Edit</button>
                       <button className="btn-primary" style={{padding:'0.4rem 0.8rem', fontSize:'0.85rem', background:'#d32f2f'}} onClick={() => handleDelete(p.idProduct)}>Hapus</button>
                     </td>

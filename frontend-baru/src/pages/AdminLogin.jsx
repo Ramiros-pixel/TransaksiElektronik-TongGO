@@ -36,7 +36,7 @@ function AdminLogin() {
 
     try {
       if (mode === 'login') {
-        const response = await fetch('http://localhost:9090/api/auth/login', {
+        const response = await fetch('http://localhost:9090/api/admin/auth/login', {  
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: formData.email, password: formData.password })
@@ -47,19 +47,19 @@ function AdminLogin() {
         const data = await response.json();
         localStorage.setItem('tonggo_jwt', data.jwt);
         navigate('/admin');
-        
+
       } else if (mode === 'register') {
-        const response = await fetch('http://localhost:9090/api/auth/register', {
+        const response = await fetch('http://localhost:9090/api/admin/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: formData.username, email: formData.email, password: formData.password })
         });
-        
+
         if (!response.ok) {
           const errText = await response.text();
           throw new Error(errText);
         }
-        
+
         setSuccessMsg('Berhasil mendaftar! Silakan login.');
         setTimeout(() => setMode('login'), 2000);
 
@@ -77,7 +77,6 @@ function AdminLogin() {
 
         const data = await response.json();
         if (data.token) {
-          // SMTP is not configured on local env, output token for testing
           setSuccessMsg(`${data.message} Gunakan Token: ${data.token}`);
           setFormData(prev => ({ ...prev, token: data.token }));
         } else {
@@ -130,13 +129,13 @@ function AdminLogin() {
 
       <form onSubmit={handleAuth} style={{display:'flex', flexDirection:'column', gap:'1.2rem'}}>
         {mode === 'register' && (
-          <input 
-            type="text" name="username" placeholder="Username" required 
+          <input
+            type="text" name="username" placeholder="Username" required
             value={formData.username} onChange={handleChange}
-            style={{padding:'1rem', border:'2px solid #ddd', borderRadius:'10px', fontSize:'1.1rem'}} 
+            style={{padding:'1rem', border:'2px solid #ddd', borderRadius:'10px', fontSize:'1.1rem'}}
           />
         )}
-        
+
         {(mode === 'login' || mode === 'register' || mode === 'forgot') && (
           <input 
             type="email" name="email" placeholder="Email" required 
@@ -173,8 +172,8 @@ function AdminLogin() {
         
         <button type="submit" className="btn-primary rounded" disabled={loading} style={{padding:'1rem', fontSize:'1.1rem'}}>
           {loading ? 'Memproses...' : (
-            mode === 'login' ? 'Masuk' : 
-            mode === 'register' ? 'Daftar' : 
+            mode === 'login' ? 'Masuk' :
+            mode === 'register' ? 'Daftar' :
             mode === 'forgot' ? 'Kirim Token Reset' : 'Simpan Password Baru'
           )}
         </button>
@@ -183,16 +182,16 @@ function AdminLogin() {
       <div style={{marginTop:'2rem', display:'flex', flexDirection:'column', gap:'0.8rem', alignItems:'center'}}>
         {mode === 'login' && (
           <>
-            <span 
-              onClick={() => { setMode('forgot'); setErrorMsg(''); setSuccessMsg(''); }} 
+            <span
+              onClick={() => { setMode('forgot'); setErrorMsg(''); setSuccessMsg(''); }}
               style={{color:'var(--primary-dark)', fontWeight:'bold', cursor:'pointer', fontSize:'0.95rem'}}
             >
               Lupa Password?
             </span>
             <p style={{margin:0, color:'var(--text-light)'}}>
               Belum punya akun?{' '}
-              <span 
-                onClick={() => { setMode('register'); setErrorMsg(''); setSuccessMsg(''); }} 
+              <span
+                onClick={() => { setMode('register'); setErrorMsg(''); setSuccessMsg(''); }}
                 style={{color:'var(--primary-dark)', fontWeight:'bold', cursor:'pointer'}}
               >
                 Daftar di sini
@@ -204,8 +203,8 @@ function AdminLogin() {
         {mode === 'register' && (
           <p style={{margin:0, color:'var(--text-light)'}}>
             Sudah punya akun?{' '}
-            <span 
-              onClick={() => { setMode('login'); setErrorMsg(''); setSuccessMsg(''); }} 
+            <span
+              onClick={() => { setMode('login'); setErrorMsg(''); setSuccessMsg(''); }}
               style={{color:'var(--primary-dark)', fontWeight:'bold', cursor:'pointer'}}
             >
               Login di sini

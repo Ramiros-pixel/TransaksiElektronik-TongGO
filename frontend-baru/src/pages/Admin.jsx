@@ -105,16 +105,15 @@ function Admin({ formatRupiah }) {
 
   return (
     <div className="page-container" style={{maxWidth:'1000px'}}>
-      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '2rem', borderBottom: '1px solid #eee', paddingBottom: '1rem'}}>
+      <div className="admin-header">
         <div>
           <h3 className="section-subtitle" style={{textAlign:'left', fontSize:'1.5rem'}}>Admin Access</h3>
           <h2 style={{fontSize:'2rem', margin:0}}>Dashboard Kasir (Live)</h2>
         </div>
-        <div style={{display:'flex', gap:'1rem', alignItems:'center'}}>
-          <button className="btn-primary rounded" onClick={handleResetQueue} style={{padding: '0.5rem 1.5rem', background:'#d32f2f', color:'#fff'}}>Reset Antrian</button>
-          <button className="btn-primary rounded" onClick={() => navigate('/admin-menu')} style={{padding: '0.5rem 1.5rem'}}>Manajemen Menu</button>
-          <button className="btn-primary rounded" onClick={() => navigate('/admin-tables')} style={{padding: '0.5rem 1.5rem'}}>Manajemen Meja</button>
-          <button className="btn-outline" onClick={handleLogout} style={{padding: '0.5rem 1.5rem'}}>Logout</button>
+        <div className="admin-header-actions">
+          <button className="btn-primary rounded" onClick={handleResetQueue} style={{background:'#d32f2f', color:'#fff'}}>Reset Antrian</button>
+          <button className="btn-primary rounded" onClick={() => navigate('/admin-menu')}>Manajemen Menu</button>
+          <button className="btn-primary rounded" onClick={() => navigate('/admin-tables')}>Manajemen Meja</button>
         </div>
       </div>
 
@@ -144,14 +143,14 @@ function Admin({ formatRupiah }) {
                 const isPaid = order.status === 'PAID';
                 return (
                   <tr key={order.id}>
-                    <td><strong style={{fontSize:'1.2rem', color:'var(--primary-dark)'}}>{order.queueNumber}</strong></td>
-                    <td style={{fontWeight:600}}>{order.tableNumber}</td>
-                    <td style={{fontSize:'0.9rem'}}>
+                    <td data-label="Antrian"><strong style={{fontSize:'1.2rem', color:'var(--primary-dark)'}}>{order.queueNumber}</strong></td>
+                    <td data-label="Meja" style={{fontWeight:600}}>{order.tableNumber}</td>
+                    <td data-label="Detail" style={{fontSize:'0.9rem'}}>
                        <div style={{color:'var(--text-light)', marginBottom:'0.3rem'}}>{order.timestamp}</div>
                        <div>{order.itemsSummary}</div>
                     </td>
-                    <td style={{fontWeight:'bold', fontSize:'1.1rem'}}>{formatRupiah(order.totalPrice)}</td>
-                    <td>
+                    <td data-label="Total" style={{fontWeight:'bold', fontSize:'1.1rem'}}>{formatRupiah(order.totalPrice)}</td>
+                    <td data-label="Status">
                       <div style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
                         <span className={isPaid ? 'badge paid' : 'badge unpaid'} style={{textAlign:'center'}}>
                           {isPaid ? 'LUNAS' : 'BELUM BAYAR'}
@@ -161,7 +160,7 @@ function Admin({ formatRupiah }) {
                         </span>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Aksi">
                       <div style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
                         {!isPaid && (
                           <button className="btn-primary" onClick={() => handleMarkPaid(order.id)} style={{padding:'0.4rem 1rem', fontSize:'0.85rem'}}>

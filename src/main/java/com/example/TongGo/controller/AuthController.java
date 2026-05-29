@@ -75,14 +75,9 @@ public class AuthController {
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email sudah digunakan");
         }
-        
-        // Enforce ADMIN role for all registrations as per original code
-        user.setRole(Role.ADMIN);
-        
-        // Hash password menggunakan BCrypt
+        user.setRole(Role.USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
-        
         return ResponseEntity.ok("User berhasil didaftarkan");
     }
 

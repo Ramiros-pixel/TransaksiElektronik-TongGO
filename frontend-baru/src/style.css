@@ -1,7 +1,7 @@
 :root {
   --bg-color: #ffffff;
   --text-color: #333333;
-  --primary-color: #fffd37; /* The requested yellow */
+  --primary-color: #fffd37;
   --primary-dark: #e5e32b;
   --text-dark: #1a1a1a;
   --text-light: #777777;
@@ -19,6 +19,17 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   line-height: 1.6;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+#app-container {
+  flex: 1;
+  width: 100%;
 }
 
 h1, h2, h3, h4 {
@@ -119,6 +130,11 @@ button {
   width: 25px; height: 3px; background: #000;
 }
 
+.nav-actions {
+  display: flex;
+  align-items: center;
+}
+
 /* Responsive Nav */
 @media (max-width: 900px) {
   .nav-links {
@@ -135,13 +151,8 @@ button {
   .nav-links.active {
     display: flex;
   }
-  .nav-actions { display: none; }
+  .nav-actions .btn-primary { display: none; }
   .menu-toggle { display: flex; }
-}
-
-/* Container */
-#app-container {
-  width: 100%;
 }
 
 /* Hero Section */
@@ -210,7 +221,6 @@ button {
   align-items: center;
 }
 
-/* The yellow background shape behind the salad bowl */
 .hero-shape {
   position: absolute;
   right: -5%;
@@ -429,11 +439,86 @@ button {
 .badge.unpaid { background: #ffebee; color: #d32f2f; }
 .badge.paid { background: #e8f5e9; color: #2e7d32; }
 
+/* Admin Header */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.admin-header-actions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    margin: 1rem;
+    padding: 1.2rem;
+    border-radius: 10px;
+  }
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .admin-header-actions {
+    width: 100%;
+  }
+  .admin-header-actions a,
+  .admin-header-actions button {
+    flex: 1;
+    text-align: center;
+    padding: 0.6rem 0.8rem !important;
+    font-size: 0.85rem !important;
+  }
+  .admin-table thead { display: none; }
+  .admin-table, .admin-table tbody, .admin-table tr, .admin-table td {
+    display: block;
+    width: 100%;
+  }
+  .admin-table tr {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .admin-table td {
+    border: none;
+    padding: 0.4rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .admin-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-light);
+    font-size: 0.8rem;
+    min-width: 90px;
+  }
+  .admin-table td:last-child {
+    justify-content: flex-end;
+    padding-top: 0.8rem;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 0.4rem;
+  }
+}
+
 /* Footer */
 .footer {
   background: #1a1a1a;
   color: #fff;
   padding: 4rem 5% 1rem;
+  margin-top: auto;
 }
 .footer-content {
   display: grid;

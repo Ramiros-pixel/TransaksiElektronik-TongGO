@@ -140,14 +140,13 @@ function AdminTable() {
 
   return (
     <div className="page-container" style={{maxWidth:'1000px'}}>
-      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '2rem', borderBottom: '1px solid #eee', paddingBottom: '1rem'}}>
+      <div className="admin-header">
         <div>
           <h3 className="section-subtitle" style={{textAlign:'left', fontSize:'1.5rem'}}>Admin Access</h3>
           <h2 style={{fontSize:'2rem', margin:0}}>Manajemen Meja</h2>
         </div>
-        <div style={{display:'flex', gap:'1rem'}}>
-          <Link to="/admin" className="btn-outline" style={{padding: '0.5rem 1.5rem'}}>Kembali ke Pesanan</Link>
-          <button className="btn-outline" onClick={handleLogout} style={{padding: '0.5rem 1.5rem'}}>Logout</button>
+        <div className="admin-header-actions">
+          <Link to="/admin" className="btn-outline">Kembali ke Pesanan</Link>
         </div>
       </div>
 
@@ -178,15 +177,15 @@ function AdminTable() {
             <tbody>
               {tables.map(t => (
                 <tr key={t.idTable}>
-                  <td>{t.idTable}</td>
-                  <td style={{fontWeight:600}}>Meja {t.tableNumber}</td>
-                  <td style={{fontFamily:'monospace', color:'var(--primary-dark)'}}>{t.qrIdentify}</td>
-                  <td>
+                  <td data-label="ID">{t.idTable}</td>
+                  <td data-label="Nomor Meja" style={{fontWeight:600}}>Meja {t.tableNumber}</td>
+                  <td data-label="Kode QR" style={{fontFamily:'monospace', color:'var(--primary-dark)'}}>{t.qrIdentify}</td>
+                  <td data-label="Status">
                     <span className={t.isActive ? 'badge paid' : 'badge unpaid'}>
                       {t.isActive ? 'AKTIF' : 'NONAKTIF'}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Aksi">
                     <button className="btn-outline" style={{padding:'0.4rem 0.8rem', fontSize:'0.85rem', marginRight:'0.5rem', borderColor:'var(--primary-dark)', color:'var(--primary-dark)', fontWeight:600}} onClick={() => openQrModal(t)}>QR Code</button>
                     <button className="btn-outline" style={{padding:'0.4rem 0.8rem', fontSize:'0.85rem', marginRight:'0.5rem'}} onClick={() => openEditModal(t)}>Edit</button>
                     <button className="btn-primary" style={{padding:'0.4rem 0.8rem', fontSize:'0.85rem', background:'#d32f2f'}} onClick={() => handleDelete(t.idTable)}>Hapus</button>

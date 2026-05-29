@@ -16,6 +16,8 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const isAdminPage = ['/admin-login', '/admin', '/admin-menu', '/admin-tables'].includes(location.pathname);
+
   const handleScrollTo = (e, id) => {
     e.preventDefault();
     if (location.pathname !== '/') {
@@ -40,12 +42,15 @@ function App() {
     if (navLinks) navLinks.classList.remove('active');
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('tonggo_jwt');
+    navigate('/admin-login');
+  };
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const meja = urlParams.get('meja');
-    if (meja) {
-      setTableNumber(meja);
-    }
+    if (meja) setTableNumber(meja);
   }, []);
 
   const addToCart = (item) => {
@@ -71,7 +76,6 @@ function App() {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(number);
   };
 
-  // Close mobile menu on route change
   useEffect(() => {
     const navLinks = document.getElementById('nav-links');
     if (navLinks && navLinks.classList.contains('active')) {
@@ -81,9 +85,7 @@ function App() {
 
   const toggleMenu = () => {
     const navLinks = document.getElementById('nav-links');
-    if (navLinks) {
-      navLinks.classList.toggle('active');
-    }
+    if (navLinks) navLinks.classList.toggle('active');
   };
 
   return (
@@ -92,51 +94,58 @@ function App() {
         <div className="logo">
           <a href="/" onClick={handleHome} className="brand-name">Kantin Saung Mangga</a>
         </div>
-        
-        <button className="menu-toggle" id="mobile-menu-btn" onClick={toggleMenu}>
-          <span className="bar"></span>
-          <span className="bar"></span>
-          <span className="bar"></span>
-        </button>
 
-        <nav className="nav-links" id="nav-links">
-          <a href="/" onClick={handleHome} className="nav-link">Home</a>
-          <a href="#about-section" onClick={(e) => handleScrollTo(e, 'about-section')} className="nav-link">About</a>
-          <a href="#services-section" onClick={(e) => handleScrollTo(e, 'services-section')} className="nav-link">Services</a>
-          <Link to="/pesan" className="nav-link" onClick={() => document.getElementById('nav-links')?.classList.remove('active')}>Menu</Link>
-          <Link to="/admin-login" className="nav-link" onClick={() => document.getElementById('nav-links')?.classList.remove('active')}>Admin</Link>
-        </nav>
-        
+        {!isAdminPage && (
+          <button className="menu-toggle" id="mobile-menu-btn" onClick={toggleMenu}>
+            <span className="bar"></span>
+            <span className="bar"></span>
+            <span className="bar"></span>
+          </button>
+        )}
+
+        {!isAdminPage && (
+          <nav className="nav-links" id="nav-links">
+            <a href="/" onClick={handleHome} className="nav-link">Home</a>
+            <a href="#about-section" onClick={(e) => handleScrollTo(e, 'about-section')} className="nav-link">About</a>
+            <a href="#services-section" onClick={(e) => handleScrollTo(e, 'services-section')} className="nav-link">Services</a>
+            <Link to="/pesan" className="nav-link" onClick={() => document.getElementById('nav-links')?.classList.remove('active')}>Menu</Link>
+          </nav>
+        )}
+
         <div className="nav-actions">
-          <Link to="/pesan" className="btn-primary rounded">Pesan Sekarang</Link>
+          {isAdminPage && location.pathname !== '/admin-login' ? (
+            <button className="btn-outline" onClick={handleLogout} style={{padding:'0.5rem 1.5rem'}}>Logout</button>
+          ) : !isAdminPage ? (
+            <Link to="/pesan" className="btn-primary rounded">Pesan Sekarang</Link>
+          ) : null}
         </div>
       </header>
-      
+
       <main id="app-container">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/pesan" element={
-            <Order 
-              addToCart={addToCart} 
-              cart={cart} 
-              formatRupiah={formatRupiah} 
+            <Order
+              addToCart={addToCart}
+              cart={cart}
+              formatRupiah={formatRupiah}
             />
           } />
           <Route path="/detail" element={
-            <Detail 
-              cart={cart} 
-              updateQty={updateQty} 
+            <Detail
+              cart={cart}
+              updateQty={updateQty}
               clearCart={clearCart}
-              tableNumber={tableNumber} 
-              setTableNumber={setTableNumber} 
+              tableNumber={tableNumber}
+              setTableNumber={setTableNumber}
               formatRupiah={formatRupiah}
               setLastOrder={setLastOrder}
             />
           } />
           <Route path="/receipt" element={
-            <Receipt 
-              lastOrder={lastOrder} 
-              formatRupiah={formatRupiah} 
+            <Receipt
+              lastOrder={lastOrder}
+              formatRupiah={formatRupiah}
             />
           } />
           <Route path="/admin-login" element={<AdminLogin />} />
@@ -146,7 +155,6 @@ function App() {
         </Routes>
       </main>
 
-      {/* Floating Cart Indicator */}
       {location.pathname === '/pesan' && cart.length > 0 && (
         <div className="floating-cart" style={{ animation: 'slideUp 0.3s' }}>
           <div>

@@ -58,7 +58,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/orders/init").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/api/auth/**", "/api/payment/callback", "/payment/callback", "/api/detection/**", "/api/orders/*/receipt", "/api/tables/qr/**").permitAll()
+                .requestMatchers("/api/auth/**", "/api/admin/auth/**", "/api/payment/callback", "/payment/callback", "/api/detection/**", "/api/orders/*/receipt", "/api/tables/qr/**").permitAll()
                 .requestMatchers(
                     "/api/auth/**",
                     "/api/payment/**",
